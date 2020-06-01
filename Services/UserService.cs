@@ -20,19 +20,19 @@ namespace SACA.Services
 {
     public class UserService : IUserService
     {
-        private readonly AppConfiguration _appConfiguration;
+        private readonly IConfiguration _configuration;
         private UserManager<User> _userManager;
         private SignInManager<User> _signInManager;
         private readonly IMapper _mapper;
 
         public UserService(
-            IOptionsMonitor<AppConfiguration> options, 
+            IConfiguration configuration, 
             UserManager<User> userManager, 
             SignInManager<User> signInManager, 
             IMapper mapper
             )
         {
-            _appConfiguration = options.Get("AppConfiguration");
+            _configuration = configuration;
             _userManager = userManager;
             _signInManager = signInManager;
             _mapper = mapper;
@@ -47,9 +47,11 @@ namespace SACA.Services
                 var user = await _userManager.FindByNameAsync(username);
                 var roles = await _userManager.GetRolesAsync(user);
 
+                var appConfiguration = _configuration.GetSection("AppConfiguration").Get<AppConfiguration>();
+
                 // authentication successful so generate jwt token
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_appConfiguration.Token.SecurityKey);
+                var key = Encoding.ASCII.GetBytes(_configuration["AppConfiguration:Token:SecurityKey"]);
 
                 var claimsIdentity = new ClaimsIdentity(new Claim[]
                     {
@@ -63,8 +65,8 @@ namespace SACA.Services
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = claimsIdentity,
-                    Issuer = _appConfiguration.Token.Issuer,
-                    Audience = _appConfiguration.Token.Audience,
+                    Issuer = appConfiguration.Token.Issuer,
+                    Audience = appConfiguration.Token.Audience,
                     IssuedAt = DateTime.UtcNow,
                     Expires = DateTime.UtcNow.AddDays(7),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

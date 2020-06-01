@@ -15,13 +15,8 @@ namespace SACA.Extensions
             IConfiguration configuration
             )
         {
-            // configure strongly typed settings objects
-            var appConfigurationSection = configuration.GetSection("AppConfiguration");
-            services.Configure<AppConfiguration>("AppConfiguration", appConfigurationSection);
-
-            // configure jwt authentication
-            var appConfiguration = appConfigurationSection.Get<AppConfiguration>();
-            var key = Encoding.ASCII.GetBytes(appConfiguration.Token.SecurityKey);
+            var appConfiguration = configuration.GetSection("AppConfiguration").Get<AppConfiguration>();
+            var key = Encoding.ASCII.GetBytes(configuration["AppConfiguration:Token:SecurityKey"]);
 
             services.AddAuthentication(options =>
             {
@@ -36,7 +31,7 @@ namespace SACA.Extensions
                 {
                     // The signing key must match!
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = appConfiguration.Token.Key,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
 
                     // Validate the JWT Issuer (iss) claim
                     ValidateIssuer = true,
