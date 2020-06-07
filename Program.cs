@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace SACA
 {
@@ -14,9 +15,17 @@ namespace SACA
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    //webBuilder.UseStartup<Startup>();
-                    webBuilder.UseSentry();
-                    webBuilder.UseStartup<Startup>().UseUrls("https://localhost:5501");
+                    // webBuilder.UseStartup<Startup>();
+                    // webBuilder.UseSentry();
+
+                    if(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Heroku") {
+                        webBuilder.UseStartup<Startup>();
+                    }
+                    
+                    var PORT = Environment.GetEnvironmentVariable("PORT");
+
+                    webBuilder.UseStartup<Startup>()
+                    .UseUrls($"http://*:{PORT}");
                 });
     }
 }

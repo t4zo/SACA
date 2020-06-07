@@ -20,6 +20,7 @@ using SACA.Repositories.Interfaces;
 using SACA.Services.Interfaces;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace SACA
 {
@@ -39,7 +40,7 @@ namespace SACA
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var builder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("ConnectionStrings__DefaultConnection"));
+            //var builder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("ConnectionStrings__DefaultConnection"));
             //builder.ConnectionString = Configuration["ConnectionStrings__DefaultConnection"];
             
             //_connection = builder.ConnectionString;
@@ -102,6 +103,12 @@ namespace SACA
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
+
+            if (Configuration["DOCKER"] == "True")
+            {
+                var context = serviceProvider.GetService<ApplicationDbContext>();
+                context.Database.Migrate();
             }
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
