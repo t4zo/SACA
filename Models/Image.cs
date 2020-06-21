@@ -1,8 +1,12 @@
-﻿namespace SACA.Models
+﻿using System.Text.Json.Serialization;
+
+namespace SACA.Models
 {
     public class Image : BaseEntity
     {
         public int CategoryId { get; set; }
+
+        [JsonIgnore]
         public Category Category { get; set; }
         public int? UserId { get; set; }
         public User User { get; set; }
