@@ -1,4 +1,4 @@
-using System;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -6,21 +6,17 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using SACA.Data;
-using SACA.Services;
-using SACA.i18n;
 using SACA.Extensions;
-using SACA.Utilities;
-using AutoMapper;
+using SACA.i18n;
 using SACA.Models;
 using SACA.Repositories;
-using SACA.Transactions;
 using SACA.Repositories.Interfaces;
+using SACA.Services;
 using SACA.Services.Interfaces;
-using System.Data.SqlClient;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+using SACA.Transactions;
+using SACA.Utilities;
+using System;
 
 namespace SACA
 {
@@ -42,7 +38,7 @@ namespace SACA
         {
             //var builder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("ConnectionStrings__DefaultConnection"));
             //builder.ConnectionString = Configuration["ConnectionStrings__DefaultConnection"];
-            
+
             //_connection = builder.ConnectionString;
 
             services.AddTransient<IUserService, UserService>();
@@ -58,8 +54,7 @@ namespace SACA
             services.AddCustomCors(_defaultCorsPolicyName);
 
             services.AddDbContext<ApplicationDbContext>();
-            services.AddControllers()
-            .AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
+            services.AddControllers();
 
             services.AddJwtSecurity(Configuration);
 
@@ -105,27 +100,23 @@ namespace SACA
                 app.UseDeveloperExceptionPage();
             }
 
-            if (Configuration["DOCKER"] == "True")
-            {
-                var context = serviceProvider.GetService<ApplicationDbContext>();
-                context.Database.Migrate();
-            }
+            app.IsInDocker(serviceProvider, Configuration);
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
 
-            //app.Run(async (context) =>
-            //{
-            //    await context.Response.WriteAsync($"ConnectionString: {_connection}");
-            //});
-
             app.SeedDatabase(serviceProvider).Wait();
             app.CreateRoles(serviceProvider, Configuration).Wait();
             app.CreateUsers(serviceProvider, Configuration).Wait();
 
             app.UseCors(_defaultCorsPolicyName);
+
+            //app.Run(async (context) =>
+            //{
+            //    await context.Response.WriteAsync($"ConnectionString: {_connection}");
+            //});
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             //app.UseSwagger();

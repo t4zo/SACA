@@ -1,7 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using System.Text;
-
-namespace SACA.Configurations
+﻿namespace SACA.Configurations
 {
     public class TokenConfiguration
     {

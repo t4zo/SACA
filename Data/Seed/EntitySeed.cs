@@ -1,10 +1,10 @@
 ﻿using SACA.Models;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SACA.Data.Seed
@@ -32,7 +32,7 @@ namespace SACA.Data.Seed
                 using var reader = new StreamReader(stream, Encoding.UTF8);
 
                 string json = await reader.ReadToEndAsync();
-                List<TEntity> entities = JsonConvert.DeserializeObject<List<TEntity>>(json);
+                List<TEntity> entities = JsonSerializer.Deserialize<List<TEntity>>(json);
 
                 foreach (var entity in entities)
                 {

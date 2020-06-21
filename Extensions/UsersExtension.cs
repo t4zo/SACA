@@ -1,14 +1,14 @@
-﻿using SACA.Configurations;
-using SACA.Data;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
-using System.Linq;
+using SACA.Configurations;
+using SACA.Data;
 using SACA.Models;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SACA.Extensions
 {
@@ -40,7 +40,7 @@ namespace SACA.Extensions
                     {
                         await context.AddAsync(new UserCategory { UserId = user.Id, CategoryId = category.Id });
                     }
-                    
+
                     await context.SaveChangesAsync();
 
                     foreach (var role in _user.Roles)

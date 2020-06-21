@@ -29,10 +29,10 @@ namespace SACA.Controllers
         private readonly IUnityOfWork _uow;
 
         public ImagesController(
-            IUserRepository userRepository, 
-            IImageRepository imageRepository, 
-            IUserCategoryRepository userCategoryRepository, 
-            ICategoryRepository categoryRepository, 
+            IUserRepository userRepository,
+            IImageRepository imageRepository,
+            IUserCategoryRepository userCategoryRepository,
+            ICategoryRepository categoryRepository,
             IImageService imageService,
             IMapper mapper,
             IUnityOfWork uow

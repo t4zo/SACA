@@ -18,10 +18,10 @@ namespace SACA.Repositories
 
         async Task<IEnumerable<Category>> ICategoryRepository.GetAllAsync(int userId)
         {
-             var categories = await _context.Categories.Include(c => c.Images)
-                .Where(c => c.UserCategories.Any(uc => uc.UserId == userId))
-                .AsNoTracking()
-                .ToListAsync();
+            var categories = await _context.Categories.Include(c => c.Images)
+               .Where(c => c.UserCategories.Any(uc => uc.UserId == userId))
+               .AsNoTracking()
+               .ToListAsync();
 
             foreach (var category in categories)
             {
@@ -52,17 +52,17 @@ namespace SACA.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.UserCategories.Any(uc => uc.UserId == userId && uc.CategoryId == categoryId));
 
-                IList<Image> images = new List<Image>();
+            IList<Image> images = new List<Image>();
 
-                foreach (var image in category.Images)
+            foreach (var image in category.Images)
+            {
+                if (image.UserId == null || image.UserId == userId)
                 {
-                    if (image.UserId == null || image.UserId == userId)
-                    {
-                        images.Add(image);
-                    }
+                    images.Add(image);
                 }
+            }
 
-                category.Images = images;
+            category.Images = images;
 
             return category;
         }

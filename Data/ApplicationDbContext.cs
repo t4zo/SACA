@@ -31,7 +31,7 @@ namespace SACA.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            
+
             string connectionString = GetConnectionEnvironmentString();
 
             optionsBuilder

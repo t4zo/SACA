@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using SACA.Data;
 using SACA.Models;
-using SACA.Models.Dto;
 using SACA.Repositories.Interfaces;
 using System.Threading.Tasks;
 

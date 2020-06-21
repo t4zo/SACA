@@ -49,10 +49,11 @@ namespace SACA.Services
         {
             string url;
 
-            if(user == null)
+            if (user == null)
             {
                 url = $"{_cloudinaryEnvironmentFolder}/_defaults/{model.Name}";
-            } else
+            }
+            else
             {
                 url = $"{_cloudinaryEnvironmentFolder}/users/{user.Id}/{model.Name}";
             }

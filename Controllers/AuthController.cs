@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SACA.Models;
@@ -9,6 +7,8 @@ using SACA.Repositories.Interfaces;
 using SACA.Services.Interfaces;
 using SACA.Transactions;
 using SACA.Utilities;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SACA.Controllers
 {
@@ -26,12 +26,12 @@ namespace SACA.Controllers
         private readonly IMapper _mapper;
 
         public AuthController(
-            IUserService userService, 
+            IUserService userService,
             IImageService imageService,
             IUserRepository userRepository,
-            ICategoryRepository categoryRepository, 
-            IUserCategoryRepository userCategoryRepository, 
-            IUnityOfWork uow, 
+            ICategoryRepository categoryRepository,
+            IUserCategoryRepository userCategoryRepository,
+            IUnityOfWork uow,
             IMapper mapper
             )
         {

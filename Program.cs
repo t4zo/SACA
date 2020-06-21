@@ -18,14 +18,17 @@ namespace SACA
                     // webBuilder.UseStartup<Startup>();
                     // webBuilder.UseSentry();
 
-                    if(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Heroku") {
+                    if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Heroku")
+                    {
                         webBuilder.UseStartup<Startup>();
                     }
-                    
-                    var PORT = Environment.GetEnvironmentVariable("PORT");
+                    else
+                    {
+                        var PORT = Environment.GetEnvironmentVariable("PORT");
 
-                    webBuilder.UseStartup<Startup>()
-                    .UseUrls($"http://*:{PORT}");
+                        webBuilder.UseStartup<Startup>()
+                        .UseUrls($"http://*:{PORT}");
+                    }
                 });
     }
 }

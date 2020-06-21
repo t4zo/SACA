@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SACA.Configurations;
 using SACA.Models;
@@ -21,14 +20,14 @@ namespace SACA.Services
     public class UserService : IUserService
     {
         private readonly IConfiguration _configuration;
-        private UserManager<User> _userManager;
-        private SignInManager<User> _signInManager;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
         private readonly IMapper _mapper;
 
         public UserService(
-            IConfiguration configuration, 
-            UserManager<User> userManager, 
-            SignInManager<User> signInManager, 
+            IConfiguration configuration,
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
             IMapper mapper
             )
         {
@@ -88,7 +87,7 @@ namespace SACA.Services
 
         async Task<UserDto> IUserService.Create(SignUpDto signUpDto)
         {
-            if(signUpDto.Password != signUpDto.ConfirmPassword)
+            if (signUpDto.Password != signUpDto.ConfirmPassword)
             {
                 return null;
             }
@@ -110,7 +109,7 @@ namespace SACA.Services
 
             foreach (var role in signUpDto.Roles)
             {
-                if(Constants.AllRoles.Contains(role))
+                if (Constants.AllRoles.Contains(role))
                 {
                     await _userManager.AddToRoleAsync(user, role);
                 }
