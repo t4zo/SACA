@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using SACA.Models;
 using SACA.Models.Dto;
 using SACA.Services.Interfaces;
+using SACA.Utilities;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,46 +28,39 @@ namespace SACA.Services
                 }
             );
 
-            _cloudinaryEnvironmentFolder = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" ? "SACA_Development" : "SACA";
+            _cloudinaryEnvironmentFolder = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Constants.Development ? Constants.SACA_Development : Constants.SACA;
         }
 
-        async Task<string> IImageService.UploadToCloudinaryAsync(ImageDto model, int? userId)
+        async Task<(string FullyQualifiedPublicId, string PublicId)> IImageService.UploadToCloudinaryAsync(ImageDto model, int? userId)
         {
-            var uploadParams = new ImageUploadParams()
+            var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription($@"data:image/png;base64,{model.Base64}"),
-                PublicId = userId.HasValue ? $"{_cloudinaryEnvironmentFolder}/users/{userId}/{model.Name}" : $"{_cloudinaryEnvironmentFolder}/_defaults/{model.Name}",
+                PublicId = userId.HasValue ? $"{_cloudinaryEnvironmentFolder}/{Constants.users}/{userId}/{Guid.NewGuid()}" : $"{_cloudinaryEnvironmentFolder}/_defaults/{Guid.NewGuid()}",
                 Async = "true",
                 Overwrite = true
             };
 
-            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            var result = await _cloudinary.UploadAsync(uploadParams);
 
-            return uploadResult.FullyQualifiedPublicId;
+            return (result.FullyQualifiedPublicId, result.PublicId);
         }
 
         async Task<bool> IImageService.RemoveImageFromCloudinaryAsync(Image model, User user)
         {
-            string url;
+            var result = await _cloudinary.DeleteResourcesAsync(model.Url);
 
-            if (user == null)
-            {
-                url = $"{_cloudinaryEnvironmentFolder}/_defaults/{model.Name}";
-            }
-            else
-            {
-                url = $"{_cloudinaryEnvironmentFolder}/users/{user.Id}/{model.Name}";
-            }
+            var status = result.Deleted.First().Value;
 
-            var result = await _cloudinary.DeleteResourcesAsync(url);
-            var status = result.Deleted.ToArray().First().Value;
             return status != "not_found";
         }
 
         async Task IImageService.RemoveFolderFromCloudinaryAsync(int userId)
         {
-            await _cloudinary.DeleteResourcesByPrefixAsync($"{_cloudinaryEnvironmentFolder}/users/{userId}");
-            await _cloudinary.DeleteFolderAsync($"{_cloudinaryEnvironmentFolder}/users/{userId}");
+            var userFolder = $"{_cloudinaryEnvironmentFolder}/{Constants.users}/{userId}";
+
+            await _cloudinary.DeleteResourcesByPrefixAsync(userFolder);
+            await _cloudinary.DeleteFolderAsync(userFolder);
         }
 
         MagickImage IImageService.Resize(MagickImage image, int width, int height)

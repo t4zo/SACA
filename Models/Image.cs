@@ -12,5 +12,6 @@ namespace SACA.Models
         public User User { get; set; }
         public string Name { get; set; }
         public string Url { get; set; }
+        public string FullyQualifiedPublicUrl { get; set; }
     }
 }

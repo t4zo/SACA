@@ -50,21 +50,13 @@ namespace SACA.Controllers
         [HttpGet("{userId}")]
         public async Task<ActionResult<IEnumerable<Image>>> GetAll(int userId)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var user = await _userRepository.GetAsync(userId);
 
             if (user == null) return BadRequest(ModelState);
 
             var categories = await _categoryRepository.GetAllAsync(userId);
 
-            if (categories == null) return BadRequest(ModelState);
-
             var images = categories.SelectMany(c => c.Images);
-
-            if (images == null) return BadRequest(ModelState);
-
-            images.ToList().ForEach(image => image.Category = null);
 
             return Ok(images);
         }
@@ -72,37 +64,31 @@ namespace SACA.Controllers
         [HttpGet("{userId}/{imageId}")]
         public async Task<ActionResult<IEnumerable<Image>>> Get(int userId, int imageId)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var user = await _userRepository.GetAsync(userId);
 
             if (user == null) return BadRequest(ModelState);
 
             var image = await _imageRepository.GetAsync(imageId);
 
-            image.User = null;
-
             if (image == null || image.UserId != user.Id) return BadRequest(ModelState);
+
+            image.User = null;
 
             return Ok(image);
         }
 
         [HttpPost("{userId}")]
-        public async Task<ActionResult<Image>> Create(int userId, ImageDto model)
+        public async Task<ActionResult<Image>> Create(int userId, ImageDto imageDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var user = await _userRepository.GetAsync(userId);
-
             if (user == null) return BadRequest(ModelState);
 
-            model = ResizeImage(model);
+            var image = _mapper.Map<Image>(imageDto);
 
-            var image = _mapper.Map<Image>(model);
+            ResizeImage(imageDto);
 
-            image.Url = await _imageService.UploadToCloudinaryAsync(model, userId);
+            (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageDto, userId);
             image.UserId = user.Id;
-
             await _imageRepository.CreateAsync(image, userId);
 
             var userCategory = new UserCategory { UserId = user.Id, CategoryId = image.CategoryId };
@@ -120,29 +106,25 @@ namespace SACA.Controllers
         }
 
         [HttpPut("{userId}/{imageId}")]
-        public async Task<ActionResult<Image>> Update(int userId, int imageId, ImageDto model)
+        public async Task<ActionResult<Image>> Update(int userId, int imageId, ImageDto imageDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var user = await _userRepository.GetAsync(userId);
-
             if (user == null) return BadRequest(ModelState);
 
             var oldImage = await _imageRepository.GetAsync(imageId);
-
-            if (oldImage == null || (oldImage.Id != model.Id)) return BadRequest(ModelState);
+            if (oldImage == null || (oldImage.Id != imageDto.Id)) return BadRequest(ModelState);
 
             await _imageService.RemoveImageFromCloudinaryAsync(oldImage, user);
 
+            ResizeImage(imageDto);
+
             var image = _mapper.Map<Image>(oldImage);
+            image.Name = imageDto.Name;
 
-            model = ResizeImage(model);
-
-            image.Name = model.Name;
-            image.Url = await _imageService.UploadToCloudinaryAsync(model, user.Id);
-
+            (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageDto, user.Id);
             await _imageRepository.UpdateAsync(image);
-
             await _uow.CommitAsync();
 
             image.User = null;
@@ -152,24 +134,20 @@ namespace SACA.Controllers
 
         [HttpPost("admin/{adminId}")]
         [Authorize(Constants.Administrador)]
-        public async Task<ActionResult<IReadOnlyCollection<Image>>> CreateAdmin(int adminId, ImageDto model)
+        public async Task<ActionResult<IReadOnlyCollection<Image>>> CreateAdmin(int adminId, ImageDto imageDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var admin = await _userRepository.GetAsync(adminId);
-
             if (admin == null) return BadRequest(ModelState);
 
-            using MagickImage magickImage = new MagickImage(Convert.FromBase64String(model.Base64));
+            ResizeImage(imageDto);
 
-            model.Base64 = _imageService.Resize(magickImage, 110, 150).ToBase64();
+            var image = _mapper.Map<Image>(imageDto);
 
-            var image = _mapper.Map<Image>(model);
-
-            image.Url = await _imageService.UploadToCloudinaryAsync(model, userId: null);
+            (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageDto, userId: null);
 
             await _imageRepository.CreateAsync(image, userId: null);
-
             await _uow.CommitAsync();
 
             return RedirectToAction("GetAll", new { userId = admin.Id });
@@ -178,22 +156,16 @@ namespace SACA.Controllers
         [HttpDelete("{userId}/{imageId}")]
         public async Task<ActionResult<Image>> Remove(int userId, int imageId)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var user = await _userRepository.GetAsync(userId);
-
             if (user == null) return BadRequest(ModelState);
 
             var image = await _imageRepository.GetAsync(imageId);
-
             if (image == null) return BadRequest(ModelState);
 
             var removed = await _imageService.RemoveImageFromCloudinaryAsync(image, user);
-
             if (!removed) return BadRequest("Arquivo não encontrado");
 
             _imageRepository.Remove(image);
-
             await _uow.CommitAsync();
 
             image.User = null;
@@ -205,18 +177,13 @@ namespace SACA.Controllers
         [HttpDelete("{imageId}")]
         public async Task<ActionResult<Image>> Remove(int imageId)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var image = await _imageRepository.GetAsync(imageId);
-
             if (image == null) return BadRequest(ModelState);
 
             var removed = await _imageService.RemoveImageFromCloudinaryAsync(image, user: null);
-
             if (!removed) return BadRequest("Arquivo não encontrado");
 
             _imageRepository.Remove(image);
-
             await _uow.CommitAsync();
 
             image.User = null;
@@ -224,13 +191,11 @@ namespace SACA.Controllers
             return Ok(image);
         }
 
-        private ImageDto ResizeImage(ImageDto model)
+        private void ResizeImage(ImageDto imageDto)
         {
-            using MagickImage magickImage = new MagickImage(Convert.FromBase64String(model.Base64));
+            using MagickImage magickImage = new MagickImage(Convert.FromBase64String(imageDto.Base64));
 
-            model.Base64 = _imageService.Resize(magickImage, 110, 150).ToBase64();
-
-            return model;
+            imageDto.Base64 = _imageService.Resize(magickImage, 110, 150).ToBase64();
         }
     }
 }

@@ -21,12 +21,10 @@ namespace SACA.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetAllHome()
         {
-            var categories = await _categoryRepository.GetAllAsync();
-
-            return Ok(categories);
+            return Ok(await _categoryRepository.GetAllAsync());
         }
 
         [HttpGet("{userId}")]

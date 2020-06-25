@@ -51,7 +51,6 @@ namespace SACA.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var userDto = await _userService.AuthenticateAsync(model.Email, model.Password, model.Remember);
-
             if (userDto == null) return ValidationProblem("Usuário ou Senha Inválido(s)");
 
             return Ok(new ResponseSignInUserDto { Success = true, Message = "User logged!", User = userDto });
@@ -63,9 +62,9 @@ namespace SACA.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var categories = await _categoryRepository.GetAllAsync();
-
             var user = await _userService.Create(model);
+
+            var categories = await _categoryRepository.GetAllAsync();
 
             foreach (var category in categories)
             {
@@ -80,11 +79,9 @@ namespace SACA.Controllers
         }
 
         [Authorize(Constants.Administrador)]
-        [HttpGet("")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var users = await _userService.GetUsersInRoleAsync(Constants.Usuario);
 
             var authenticationDtoUsers = _mapper.Map<IEnumerable<UserDto>>(users);
@@ -96,32 +93,21 @@ namespace SACA.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDto>> Get(int id)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            //var _id = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
-
-            var user = await _userService.FindByIdAsync(id);
-
-            return Ok(user);
+            return Ok(await _userService.FindByIdAsync(id));
         }
 
         [Authorize(Constants.All)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Remove(int id)
+        public async Task<ActionResult<User>> Remove(int id)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var user = await _userRepository.GetAsync(id);
-
             if (user == null) return BadRequest(ModelState);
 
             await _imageService.RemoveFolderFromCloudinaryAsync(user.Id);
-
             await _userService.Remove(user);
-
             await _uow.CommitAsync();
 
-            return Ok();
+            return Ok(user);
         }
     }
 }

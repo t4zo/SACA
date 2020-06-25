@@ -216,8 +216,8 @@ namespace SACA.Migrations
                         .HasColumnName("category_id")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Ext")
-                        .HasColumnName("ext")
+                    b.Property<string>("FullyQualifiedPublicUrl")
+                        .HasColumnName("fully_qualified_public_url")
                         .HasColumnType("text");
 
                     b.Property<string>("Name")

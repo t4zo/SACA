@@ -42,7 +42,7 @@ namespace SACA.Data.Seed.Models
                     var imageDto = _mapper.Map<ImageDto>(image);
                     imageDto.Base64 = image.Url;
 
-                    image.Url = await _imageService.UploadToCloudinaryAsync(imageDto, userId: null);
+                    (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageDto, userId: null);
 
                     await dbSet.AddAsync(image);
                 }

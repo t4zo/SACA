@@ -181,7 +181,7 @@ namespace SACA.Migrations
                     user_id = table.Column<int>(nullable: true),
                     name = table.Column<string>(nullable: true),
                     url = table.Column<string>(nullable: true),
-                    ext = table.Column<string>(nullable: true)
+                    fully_qualified_public_url = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {

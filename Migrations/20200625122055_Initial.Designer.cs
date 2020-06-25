@@ -10,7 +10,7 @@ using SACA.Data;
 namespace SACA.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200429102349_Initial")]
+    [Migration("20200625122055_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -218,8 +218,8 @@ namespace SACA.Migrations
                         .HasColumnName("category_id")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Ext")
-                        .HasColumnName("ext")
+                    b.Property<string>("FullyQualifiedPublicUrl")
+                        .HasColumnName("fully_qualified_public_url")
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
