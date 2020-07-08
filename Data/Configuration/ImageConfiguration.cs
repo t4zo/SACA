@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SACA.Constants;
 using SACA.Models;
-using SACA.Utilities;
 
 namespace SACA.Data.Mappings
 {
@@ -9,8 +9,10 @@ namespace SACA.Data.Mappings
     {
         public void Configure(EntityTypeBuilder<Image> builder)
         {
+            builder.HasKey(image => image.Id);
+
             builder.Property(c => c.Id)
-                .HasIdentityOptions(startValue: Constants.DatabaseIdStartValue);
+                .HasIdentityOptions(startValue: AuthorizationConstants.Database.StartValueId);
 
             builder.HasOne(image => image.Category)
                 .WithMany(category => category.Images)
@@ -23,8 +25,6 @@ namespace SACA.Data.Mappings
                 .HasForeignKey(image => image.UserId)
                 .IsRequired(required: false)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasKey(image => image.Id);
         }
     }
 }

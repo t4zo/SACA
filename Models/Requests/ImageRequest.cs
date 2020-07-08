@@ -1,6 +1,6 @@
 ﻿namespace SACA.Models.Dto
 {
-    public class ImageDto
+    public class ImageRequest
     {
         public int Id { get; set; }
         public string Name { get; set; }

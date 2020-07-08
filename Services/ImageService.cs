@@ -2,10 +2,10 @@
 using CloudinaryDotNet.Actions;
 using ImageMagick;
 using Microsoft.Extensions.Configuration;
+using SACA.Constants;
+using SACA.Interfaces;
 using SACA.Models;
 using SACA.Models.Dto;
-using SACA.Services.Interfaces;
-using SACA.Utilities;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,15 +28,15 @@ namespace SACA.Services
                 }
             );
 
-            _cloudinaryEnvironmentFolder = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Constants.Development ? Constants.SACA_Development : Constants.SACA;
+            _cloudinaryEnvironmentFolder = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == AuthorizationConstants.Development ? AuthorizationConstants.SACA_Development : AuthorizationConstants.SACA;
         }
 
-        async Task<(string FullyQualifiedPublicId, string PublicId)> IImageService.UploadToCloudinaryAsync(ImageDto model, int? userId)
+        async Task<(string FullyQualifiedPublicId, string PublicId)> IImageService.UploadToCloudinaryAsync(ImageRequest model, int? userId)
         {
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription($@"data:image/png;base64,{model.Base64}"),
-                PublicId = userId.HasValue ? $"{_cloudinaryEnvironmentFolder}/{Constants.users}/{userId}/{Guid.NewGuid()}" : $"{_cloudinaryEnvironmentFolder}/_defaults/{Guid.NewGuid()}",
+                PublicId = userId.HasValue ? $"{_cloudinaryEnvironmentFolder}/{AuthorizationConstants.users}/{userId}/{Guid.NewGuid()}" : $"{_cloudinaryEnvironmentFolder}/_defaults/{Guid.NewGuid()}",
                 Async = "true",
                 Overwrite = true
             };
@@ -57,7 +57,7 @@ namespace SACA.Services
 
         async Task IImageService.RemoveFolderFromCloudinaryAsync(int userId)
         {
-            var userFolder = $"{_cloudinaryEnvironmentFolder}/{Constants.users}/{userId}";
+            var userFolder = $"{_cloudinaryEnvironmentFolder}/{AuthorizationConstants.users}/{userId}";
 
             await _cloudinary.DeleteResourcesByPrefixAsync(userFolder);
             await _cloudinary.DeleteFolderAsync(userFolder);
@@ -65,9 +65,10 @@ namespace SACA.Services
 
         MagickImage IImageService.Resize(MagickImage image, int width, int height)
         {
-            MagickGeometry size = new MagickGeometry(width, height);
-
-            size.IgnoreAspectRatio = true;
+            MagickGeometry size = new MagickGeometry(width, height)
+            {
+                IgnoreAspectRatio = true
+            };
 
             image.Resize(size);
 

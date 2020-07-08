@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace SACA.Services.Interfaces
+namespace SACA.Interfaces
 {
     public interface ITokenService
     {

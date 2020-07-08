@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace SACA.Models.Dto
+namespace SACA.Models.Requests
 {
-    public class SignUpDto
+    public class SignUpRequest
     {
         public string UserName { get; set; }
         public string Email { get; set; }

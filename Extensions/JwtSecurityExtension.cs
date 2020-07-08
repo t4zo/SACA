@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using SACA.Configurations;
-using System.Text;
 
 namespace SACA.Extensions
 {
@@ -15,8 +14,11 @@ namespace SACA.Extensions
             IConfiguration configuration
             )
         {
-            var appConfiguration = configuration.GetSection("AppConfiguration").Get<AppConfiguration>();
-            var key = Encoding.ASCII.GetBytes(configuration["AppConfiguration:Token:SecurityKey"]);
+            //var appConfiguration = configuration.GetSection("AppConfiguration").Get<AppConfiguration>();
+            var appConfigurationSection = configuration.GetSection("AppConfiguration");
+            services.Configure<AppConfiguration>("AppConfiguration", appConfigurationSection);
+
+            var appConfiguration = appConfigurationSection.Get<AppConfiguration>();
 
             services.AddAuthentication(options =>
             {
@@ -31,14 +33,14 @@ namespace SACA.Extensions
                 {
                     // The signing key must match!
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    IssuerSigningKey = appConfiguration.Token.Key,
 
                     // Validate the JWT Issuer (iss) claim
                     ValidateIssuer = true,
                     ValidIssuer = appConfiguration.Token.Issuer,
 
                     // Validate the JWT Audience (aud) claim
-                    ValidateAudience = true,
+                    ValidateAudience = false,
                     ValidAudience = appConfiguration.Token.Audience,
 
                     // Validate the token expiry

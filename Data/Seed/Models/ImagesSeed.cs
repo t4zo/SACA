@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Newtonsoft.Json;
+using SACA.Interfaces;
 using SACA.Models;
 using SACA.Models.Dto;
-using SACA.Services.Interfaces;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -39,7 +39,7 @@ namespace SACA.Data.Seed.Models
 
                 foreach (var image in images)
                 {
-                    var imageDto = _mapper.Map<ImageDto>(image);
+                    var imageDto = _mapper.Map<ImageRequest>(image);
                     imageDto.Base64 = image.Url;
 
                     (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageDto, userId: null);

@@ -20,7 +20,7 @@ namespace SACA
 
                     if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Heroku")
                     {
-                        webBuilder.UseStartup<Startup>();
+                        webBuilder.UseStartup<Startup>().UseUrls("http://localhost:5501");
                     }
                     else
                     {

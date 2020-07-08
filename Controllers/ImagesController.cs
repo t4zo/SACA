@@ -1,201 +1,220 @@
 ﻿using AutoMapper;
 using ImageMagick;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SACA.Data;
+using SACA.Interfaces;
 using SACA.Models;
 using SACA.Models.Dto;
-using SACA.Repositories.Interfaces;
-using SACA.Services.Interfaces;
+using SACA.Models.Responses;
 using SACA.Transactions;
-using SACA.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static SACA.Constants.AuthorizationConstants;
 
 namespace SACA.Controllers
 {
-    [Route("saca/v2/[controller]")]
-    [Authorize(Constants.All)]
-    [ApiController]
-    public class ImagesController : ControllerBase
+    [Authorize(Permissions.Images.View)]
+    public class ImagesController : BaseApiController
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IUserCategoryRepository _userCategoryRepository;
-        private readonly ICategoryRepository _categoryRepository;
-        private readonly IImageRepository _imageRepository;
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<User> _userManager;
         private readonly IImageService _imageService;
         private readonly IMapper _mapper;
         private readonly IUnityOfWork _uow;
 
         public ImagesController(
-            IUserRepository userRepository,
-            IImageRepository imageRepository,
-            IUserCategoryRepository userCategoryRepository,
-            ICategoryRepository categoryRepository,
+            ApplicationDbContext context,
+            UserManager<User> userManager,
             IImageService imageService,
             IMapper mapper,
             IUnityOfWork uow
             )
         {
-            _userRepository = userRepository;
-            _imageRepository = imageRepository;
-            _userCategoryRepository = userCategoryRepository;
-            _categoryRepository = categoryRepository;
+            _context = context;
+            _userManager = userManager;
             _imageService = imageService;
             _mapper = mapper;
             _uow = uow;
         }
 
-        [HttpGet("{userId}")]
-        public async Task<ActionResult<IEnumerable<Image>>> GetAll(int userId)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<IEnumerable<ImageResponse>>> Get(int id)
         {
-            var user = await _userRepository.GetAsync(userId);
+            var userId = _userManager.GetUserId(User);
 
-            if (user == null) return BadRequest(ModelState);
+            var image = await _context.Images.Include(x => x.User)
+                .Where(x => x.Id == id)
+                .Where(x => x.UserId == int.Parse(userId))
+                .FirstOrDefaultAsync();
 
-            var categories = await _categoryRepository.GetAllAsync(userId);
-
-            var images = categories.SelectMany(c => c.Images);
-
-            return Ok(images);
-        }
-
-        [HttpGet("{userId}/{imageId}")]
-        public async Task<ActionResult<IEnumerable<Image>>> Get(int userId, int imageId)
-        {
-            var user = await _userRepository.GetAsync(userId);
-
-            if (user == null) return BadRequest(ModelState);
-
-            var image = await _imageRepository.GetAsync(imageId);
-
-            if (image == null || image.UserId != user.Id) return BadRequest(ModelState);
-
-            image.User = null;
-
-            return Ok(image);
-        }
-
-        [HttpPost("{userId}")]
-        public async Task<ActionResult<Image>> Create(int userId, ImageDto imageDto)
-        {
-            var user = await _userRepository.GetAsync(userId);
-            if (user == null) return BadRequest(ModelState);
-
-            var image = _mapper.Map<Image>(imageDto);
-
-            ResizeImage(imageDto);
-
-            (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageDto, userId);
-            image.UserId = user.Id;
-            await _imageRepository.CreateAsync(image, userId);
-
-            var userCategory = new UserCategory { UserId = user.Id, CategoryId = image.CategoryId };
-
-            if (!await _userCategoryRepository.ExistsAsync(userCategory))
+            if (image is null)
             {
-                await _userCategoryRepository.CreateAsync(userCategory);
+                return Forbid();
+            }
+
+            var imageResponse = _mapper.Map<ImageResponse>(image);
+
+            return Ok(imageResponse);
+        }
+
+        [Authorize(Permissions.Images.Create)]
+        [HttpPost]
+        public async Task<ActionResult<ImageResponse>> Create(ImageRequest imageRequest)
+        {
+            var userId = int.Parse(_userManager.GetUserId(User));
+
+            var image = _mapper.Map<Image>(imageRequest);
+            image.UserId = userId;
+
+            using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
+            imageRequest.Base64 = _imageService.Resize(magickImage, 110, 150).ToBase64();
+
+            try
+            {
+                (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageRequest, userId);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            await _context.Images.AddAsync(image);
+
+            var userCategory = new UserCategory { UserId = userId, CategoryId = image.CategoryId };
+            var userCategoryExists = await _context.UserCategories.AnyAsync(uc => uc.CategoryId == userCategory.CategoryId && uc.UserId == userCategory.UserId);
+            if (!userCategoryExists)
+            {
+                await _context.UserCategories.AddAsync(userCategory);
             }
 
             await _uow.CommitAsync();
 
-            image.User = null;
-
-            return Ok(image);
+            var imageResponse = _mapper.Map<ImageResponse>(image);
+            return Ok(imageResponse);
         }
 
-        [HttpPut("{userId}/{imageId}")]
-        public async Task<ActionResult<Image>> Update(int userId, int imageId, ImageDto imageDto)
+        [Authorize(Permissions.Images.Update)]
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ImageResponse>> Update(int id, ImageRequest imageRequest)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var originalImage = await _context.Images.FirstOrDefaultAsync(c => c.Id == id);
+            if (originalImage is null || (originalImage.Id != imageRequest.Id))
+            {
+                return Forbid();
+            }
 
-            var user = await _userRepository.GetAsync(userId);
-            if (user == null) return BadRequest(ModelState);
+            var userId = _userManager.GetUserId(User);
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            Image image;
 
-            var oldImage = await _imageRepository.GetAsync(imageId);
-            if (oldImage == null || (oldImage.Id != imageDto.Id)) return BadRequest(ModelState);
+            try
+            {
+                await _imageService.RemoveImageFromCloudinaryAsync(originalImage, user);
 
-            await _imageService.RemoveImageFromCloudinaryAsync(oldImage, user);
+                using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
+                imageRequest.Base64 = _imageService.Resize(magickImage, 110, 150).ToBase64();
 
-            ResizeImage(imageDto);
+                image = _mapper.Map<Image>(originalImage);
+                image.Name = imageRequest.Name;
 
-            var image = _mapper.Map<Image>(oldImage);
-            image.Name = imageDto.Name;
+                (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageRequest, int.Parse(userId));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-            (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageDto, user.Id);
-            await _imageRepository.UpdateAsync(image);
+            _context.Entry(image).State = EntityState.Modified;
             await _uow.CommitAsync();
 
-            image.User = null;
-
-            return Ok(image);
+            var imageResponse = _mapper.Map<ImageResponse>(image);
+            return Ok(imageResponse);
         }
 
-        [HttpPost("admin/{adminId}")]
-        [Authorize(Constants.Administrador)]
-        public async Task<ActionResult<IReadOnlyCollection<Image>>> CreateAdmin(int adminId, ImageDto imageDto)
+        [Authorize(Permissions.Images.Delete)]
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ImageResponse>> Remove(int id)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var image = await _context.Images.FirstOrDefaultAsync(c => c.Id == id);
+            if (image is null)
+            {
+                return BadRequest("Imagem inválida");
+            }
 
-            var admin = await _userRepository.GetAsync(adminId);
-            if (admin == null) return BadRequest(ModelState);
+            var userId = _userManager.GetUserId(User);
+            var user = await _userManager.FindByIdAsync(id.ToString());
 
-            ResizeImage(imageDto);
+            try
+            {
+                await _imageService.RemoveImageFromCloudinaryAsync(image, user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-            var image = _mapper.Map<Image>(imageDto);
-
-            (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageDto, userId: null);
-
-            await _imageRepository.CreateAsync(image, userId: null);
+            _context.Remove(image);
             await _uow.CommitAsync();
 
-            return RedirectToAction("GetAll", new { userId = admin.Id });
+            var imageResponse = _mapper.Map<ImageResponse>(image);
+            return Ok(imageResponse);
         }
 
-        [HttpDelete("{userId}/{imageId}")]
-        public async Task<ActionResult<Image>> Remove(int userId, int imageId)
+        [Authorize(Permissions.Images.Create)]
+        [HttpPost("superuser")]
+        [Authorize(Roles = Roles.Superuser)]
+        public async Task<ActionResult> CreateAdmin(ImageRequest imageRequest)
         {
-            var user = await _userRepository.GetAsync(userId);
-            if (user == null) return BadRequest(ModelState);
+            var image = _mapper.Map<Image>(imageRequest);
 
-            var image = await _imageRepository.GetAsync(imageId);
-            if (image == null) return BadRequest(ModelState);
+            using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
+            imageRequest.Base64 = _imageService.Resize(magickImage, 110, 150).ToBase64();
 
-            var removed = await _imageService.RemoveImageFromCloudinaryAsync(image, user);
-            if (!removed) return BadRequest("Arquivo não encontrado");
+            try
+            {
+                (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageRequest, userId: null);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-            _imageRepository.Remove(image);
+            await _context.Images.AddAsync(image);
             await _uow.CommitAsync();
 
-            image.User = null;
-
-            return Ok(image);
+            return Ok();
         }
 
-        [Authorize(Constants.Administrador)]
-        [HttpDelete("{imageId}")]
-        public async Task<ActionResult<Image>> Remove(int imageId)
+        [Authorize(Permissions.Images.Delete)]
+        [Authorize(Roles = Roles.Superuser)]
+        [HttpDelete("superuser/{id}")]
+        public async Task<ActionResult<ImageResponse>> RemoveAdmin(int id)
         {
-            var image = await _imageRepository.GetAsync(imageId);
-            if (image == null) return BadRequest(ModelState);
+            var image = await _context.Images.FirstOrDefaultAsync(c => c.Id == id);
+            if (image is null)
+            {
+                return BadRequest("Imagem inválida");
+            }
 
-            var removed = await _imageService.RemoveImageFromCloudinaryAsync(image, user: null);
-            if (!removed) return BadRequest("Arquivo não encontrado");
+            try
+            {
+                await _imageService.RemoveImageFromCloudinaryAsync(image, user: null);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-            _imageRepository.Remove(image);
+            _context.Remove(image);
             await _uow.CommitAsync();
 
-            image.User = null;
-
-            return Ok(image);
-        }
-
-        private void ResizeImage(ImageDto imageDto)
-        {
-            using MagickImage magickImage = new MagickImage(Convert.FromBase64String(imageDto.Base64));
-
-            imageDto.Base64 = _imageService.Resize(magickImage, 110, 150).ToBase64();
+            var imageResponse = _mapper.Map<ImageResponse>(image);
+            return Ok(imageResponse);
         }
     }
 }

@@ -68,10 +68,10 @@ namespace SACA.Data
             return connectionString;
         }
 
-        private void UseHiLoStartingSequence(ModelBuilder modelBuilder)
-        {
-            modelBuilder.HasSequence<int>("DbHiLoSequence").StartsAt(1000).IncrementsBy(1);
-            NpgsqlModelBuilderExtensions.UseHiLo(modelBuilder, "DbHiLoSequence");
-        }
+        //private void UseHiLoStartingSequence(ModelBuilder modelBuilder)
+        //{
+        //    modelBuilder.HasSequence<int>("DbHiLoSequence").StartsAt(1000).IncrementsBy(1);
+        //    NpgsqlModelBuilderExtensions.UseHiLo(modelBuilder, "DbHiLoSequence");
+        //}
     }
 }

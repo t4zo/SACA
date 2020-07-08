@@ -1,110 +1,139 @@
 ﻿using AutoMapper;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SACA.Constants;
+using SACA.Data;
+using SACA.Interfaces;
 using SACA.Models;
-using SACA.Models.Dto;
-using SACA.Repositories.Interfaces;
-using SACA.Services.Interfaces;
+using SACA.Models.Requests;
+using SACA.Models.Responses;
 using SACA.Transactions;
-using SACA.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SACA.Controllers
 {
-    [Route("saca/v2/[controller]")]
-    [Authorize]
-    [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseApiController
     {
-        private readonly IUserService _userService;
-        private readonly IImageService _imageService;
-        private readonly IUserRepository _userRepository;
-        private readonly ICategoryRepository _categoryRepository;
-        private readonly IUserCategoryRepository _userCategoryRepository;
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<User> _userManager;
         private readonly IUnityOfWork _uow;
         private readonly IMapper _mapper;
+        private readonly IUserService _userService;
+        private readonly IImageService _imageService;
 
         public AuthController(
-            IUserService userService,
-            IImageService imageService,
-            IUserRepository userRepository,
-            ICategoryRepository categoryRepository,
-            IUserCategoryRepository userCategoryRepository,
+            ApplicationDbContext context,
+            UserManager<User> userManager,
             IUnityOfWork uow,
-            IMapper mapper
+            IMapper mapper,
+            IUserService userService,
+            IImageService imageService
             )
         {
-            _userService = userService;
-            _imageService = imageService;
-            _userRepository = userRepository;
-            _categoryRepository = categoryRepository;
-            _userCategoryRepository = userCategoryRepository;
+            _context = context;
+            _userManager = userManager;
             _uow = uow;
             _mapper = mapper;
+            _userService = userService;
+            _imageService = imageService;
         }
 
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public async Task<ActionResult<UserDto>> Authenticate(AuthenticationDto model)
+        public async Task<ActionResult<UserResponse>> Authenticate(AuthenticationRequest authenticationRequest)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var userResponse = await _userService.AuthenticateAsync(authenticationRequest.Email, authenticationRequest.Password, authenticationRequest.Remember);
+            if (userResponse is null)
+            {
+                var errors = new Dictionary<string, string[]>
+                {
+                    { "first", new[] { "Email e/ou senha inválido(s)" } }
+                };
+                return ValidationProblem(new ValidationProblemDetails(errors));
+            }
 
-            var userDto = await _userService.AuthenticateAsync(model.Email, model.Password, model.Remember);
-            if (userDto == null) return ValidationProblem("Usuário ou Senha Inválido(s)");
-
-            return Ok(new ResponseSignInUserDto { Success = true, Message = "User logged!", User = userDto });
+            return Ok(new AuthenticationResponse { Success = true, Message = "Usuário logado!", User = userResponse });
         }
 
         [AllowAnonymous]
-        [HttpPost("")]
-        public async Task<ActionResult<UserDto>> Create(SignUpDto model)
+        [HttpPost]
+        public async Task<ActionResult> Create(SignUpRequest signUpRequest)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            UserResponse user;
 
-            var user = await _userService.Create(model);
+            try
+            {
+                user = await _userService.CreateAsync(signUpRequest);
+            }
+            catch (InvalidOperationException ex)
+            {
+                var errors = new Dictionary<string, string[]>
+                {
+                    { "first", new[] { ex.Message } } 
+                };
+                return ValidationProblem(new ValidationProblemDetails(errors));
+            }
 
-            var categories = await _categoryRepository.GetAllAsync();
+            var categories = await _context.Categories
+                .Include(x => x.Images)
+                .Where(x => x.Images.Any(x => x.CategoryId != 1))
+                .ToListAsync();
 
             foreach (var category in categories)
             {
-                await _userCategoryRepository.CreateAsync(new UserCategory { UserId = user.Id, CategoryId = category.Id });
+                await _context.UserCategories.AddAsync(new UserCategory { UserId = user.Id, CategoryId = category.Id });
             }
 
             await _uow.CommitAsync();
 
-            var userDto = await _userService.AuthenticateAsync(model.Email, model.Password, remember: false);
-
-            return Ok(new ResponseSignInUserDto { Success = true, Message = "User Created!", User = userDto });
+            //return RedirectToAction(nameof(Authenticate), new AuthenticationRequest { Email = signUpRequest.Email, Password = signUpRequest.Password });
+            var userResponse = await _userService.AuthenticateAsync(signUpRequest.Email, signUpRequest.Password);
+            return Ok(new AuthenticationResponse { Success = true, Message = "Usuário cadastrado!", User = userResponse });
         }
 
-        [Authorize(Constants.Administrador)]
+        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
+        public async Task<ActionResult<IEnumerable<UserResponse>>> GetAll()
         {
-            var users = await _userService.GetUsersInRoleAsync(Constants.Usuario);
+            var users = await _userManager.Users.ToListAsync();
+            var usersResponses = _mapper.Map<IEnumerable<UserResponse>>(users);
 
-            var authenticationDtoUsers = _mapper.Map<IEnumerable<UserDto>>(users);
+            foreach (var userResponse in usersResponses)
+            {
+                var user = users.FirstOrDefault(x => x.Id == userResponse.Id);
+                userResponse.Roles = await _userManager.GetRolesAsync(user);
+            }
 
-            return Ok(authenticationDtoUsers);
+            return Ok(usersResponses);
         }
 
-        [Authorize(Constants.All)]
+        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserDto>> Get(int id)
+        public async Task<ActionResult<UserResponse>> Get(string id)
         {
-            return Ok(await _userService.FindByIdAsync(id));
+            var user = await _userManager.FindByIdAsync(id);
+            var userResponse = _mapper.Map<UserResponse>(user);
+            userResponse.Roles = await _userManager.GetRolesAsync(user);
+
+            return Ok(userResponse);
         }
 
-        [Authorize(Constants.All)]
+        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<User>> Remove(int id)
+        public async Task<ActionResult<User>> Remove(string id)
         {
-            var user = await _userRepository.GetAsync(id);
-            if (user == null) return BadRequest(ModelState);
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user is null) return BadRequest("Usuário inválido");
 
             await _imageService.RemoveFolderFromCloudinaryAsync(user.Id);
-            await _userService.Remove(user);
+            await _userService.RemoveAsync(user);
+
             await _uow.CommitAsync();
 
             return Ok(user);

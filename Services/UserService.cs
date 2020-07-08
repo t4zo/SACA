@@ -1,137 +1,128 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using SACA.Configurations;
+using SACA.Constants;
+using SACA.Interfaces;
 using SACA.Models;
-using SACA.Models.Dto;
-using SACA.Services.Interfaces;
-using SACA.Utilities;
+using SACA.Models.Requests;
+using SACA.Models.Responses;
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SACA.Services
 {
     public class UserService : IUserService
     {
-        private readonly IConfiguration _configuration;
+        private readonly ITokenService _tokenService;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IMapper _mapper;
 
         public UserService(
-            IConfiguration configuration,
+            ITokenService tokenService,
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IMapper mapper
             )
         {
-            _configuration = configuration;
+            _tokenService = tokenService;
             _userManager = userManager;
             _signInManager = signInManager;
             _mapper = mapper;
         }
 
-        async Task<UserDto> IUserService.AuthenticateAsync(string username, string password, bool remember)
+        // TODO
+        async Task<UserResponse> IUserService.AuthenticateAsync(string username, string password, bool remember)
         {
             var result = await _signInManager.PasswordSignInAsync(username, password, isPersistent: remember, lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByNameAsync(username);
+                var userClaims = await _userManager.GetClaimsAsync(user);
                 var roles = await _userManager.GetRolesAsync(user);
-
-                var appConfiguration = _configuration.GetSection("AppConfiguration").Get<AppConfiguration>();
-
-                // authentication successful so generate jwt token
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_configuration["AppConfiguration:Token:SecurityKey"]);
 
                 var claimsIdentity = new ClaimsIdentity(new Claim[]
                     {
                         new Claim(ClaimTypes.Name, user.UserName),
                         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                        new Claim(Constants.RememberUser, remember.ToString().ToLower())
+                        new Claim(AuthorizationConstants.Remember, remember.ToString().ToLower())
                     });
 
                 claimsIdentity.AddClaims(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+                var token = _tokenService.GenerateJWTToken(claimsIdentity);
 
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = claimsIdentity,
-                    Issuer = appConfiguration.Token.Issuer,
-                    Audience = appConfiguration.Token.Audience,
-                    IssuedAt = DateTime.UtcNow,
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                };
+                AddUserClaims(claimsIdentity, userClaims, roles);
 
-                var securityToken = tokenHandler.CreateToken(tokenDescriptor);
-                var token = tokenHandler.WriteToken(securityToken);
+                var userResponse = _mapper.Map<UserResponse>(user);
 
-                var userDto = _mapper.Map<UserDto>(user);
+                userResponse.Roles = roles;
+                userResponse.Token = token;
 
-                userDto.Roles = roles;
-                userDto.Token = token;
-
-                return userDto.WithoutPassword();
+                return userResponse;
             }
 
             return null;
         }
 
-        async Task<UserDto> IUserService.Create(SignUpDto signUpDto)
+        private void AddUserClaims(ClaimsIdentity claimsIdentity, IList<Claim> userClaims, IList<string> roles)
         {
-            if (signUpDto.Password != signUpDto.ConfirmPassword)
+            foreach (var role in roles)
             {
-                return null;
-            }
+                if (role.Equals(AuthorizationConstants.Roles.Superuser))
+                {
+                    foreach (var userClaim in userClaims)
+                    {
+                        claimsIdentity.AddClaim(new Claim(userClaim.Type, userClaim.Value));
+                    }
+                }
 
+                if (role.Equals(AuthorizationConstants.Roles.User))
+                {
+                    foreach (var userClaim in userClaims)
+                    {
+                        claimsIdentity.AddClaim(new Claim(userClaim.Type, userClaim.Value));
+                    }
+                }
+            }
+        }
+
+        async Task<UserResponse> IUserService.CreateAsync(SignUpRequest signUpRequest)
+        {
             var user = new User
             {
-                UserName = signUpDto.UserName,
-                Email = signUpDto.Email,
+                UserName = signUpRequest.UserName,
+                Email = signUpRequest.Email,
             };
 
-            var result = await _userManager.CreateAsync(user, signUpDto.Password);
+            var result = await _userManager.CreateAsync(user, signUpRequest.Password);
 
             if (!result.Succeeded)
             {
-                var error = result.Errors.FirstOrDefault();
-
-                throw new InvalidOperationException(error.Description);
+                throw new InvalidOperationException(result.Errors.FirstOrDefault().Description);
             }
 
-            foreach (var role in signUpDto.Roles)
+            foreach (var role in signUpRequest.Roles)
             {
-                if (Constants.AllRoles.Contains(role))
+                if (AuthorizationConstants.Roles.All.Contains(role))
                 {
                     await _userManager.AddToRoleAsync(user, role);
                 }
             }
 
-            await _userManager.AddToRoleAsync(user, Constants.Usuario);
+            await _userManager.AddToRoleAsync(user, AuthorizationConstants.Roles.User);
 
-            return _mapper.Map<UserDto>(user);
+            return _mapper.Map<UserResponse>(user);
         }
 
-        async Task<UserDto> IUserService.FindByIdAsync(int id)
-        {
-            var user = await _userManager.FindByIdAsync(id.ToString());
-            var userDto = _mapper.Map<UserDto>(user);
-            userDto.Roles = await _userManager.GetRolesAsync(user);
-            return userDto;
-        }
-
-        async Task<IEnumerable<UserDto>> IUserService.GetUsersInRoleAsync(string role)
+        async Task<IEnumerable<UserResponse>> IUserService.GetUsersInRoleAsync(string role)
         {
             var users = await _userManager.GetUsersInRoleAsync(role);
-            var usersDto = _mapper.Map<IEnumerable<UserDto>>(users);
+            var usersDto = _mapper.Map<IEnumerable<UserResponse>>(users);
 
             foreach (var userDto in usersDto)
             {
@@ -142,12 +133,12 @@ namespace SACA.Services
             return usersDto.AsEnumerable();
         }
 
-        async Task<bool> IUserService.IsInRole(User user, string role)
+        async Task<bool> IUserService.IsInRoleAsync(User user, string role)
         {
             return await _userManager.IsInRoleAsync(user, role);
         }
 
-        async Task IUserService.Remove(User user)
+        async Task IUserService.RemoveAsync(User user)
         {
             await _userManager.DeleteAsync(user);
         }

@@ -1,43 +1,40 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SACA.Configurations;
-using SACA.Services.Interfaces;
+using SACA.Interfaces;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
 namespace SACA.Services
 {
     public class TokenService : ITokenService
     {
-        private readonly IConfiguration _configuration;
-        private readonly TokenConfiguration _tokenConfigurations;
+        private readonly AppConfiguration _appConfiguration;
 
-        public TokenService(IConfiguration configuration, TokenConfiguration tokenConfigurations)
+        public TokenService(IOptionsMonitor<AppConfiguration> options)
         {
-            _configuration = configuration;
-            _tokenConfigurations = tokenConfigurations;
+            _appConfiguration = options.Get("AppConfiguration");
         }
 
         string ITokenService.GenerateJWTToken(ClaimsIdentity claimsIdentity)
         {
-            DateTime createdAt = DateTime.Now;
-            DateTime expiresAt = DateTime.Now + TimeSpan.FromHours(_tokenConfigurations.Expiration);
-
             var tokenHandler = new JwtSecurityTokenHandler();
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Issuer = _tokenConfigurations.Issuer,
-                Audience = _tokenConfigurations.Audience,
                 Subject = claimsIdentity,
-                NotBefore = createdAt,
-                Expires = expiresAt,
-                SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["AppConfiguration:Token:Key"])), SecurityAlgorithms.HmacSha256Signature)
+                Issuer = _appConfiguration.Token.Issuer,
+                Audience = _appConfiguration.Token.Audience,
+                IssuedAt = DateTime.UtcNow,
+                NotBefore = DateTime.UtcNow,
+                Expires = DateTime.UtcNow.AddHours(_appConfiguration.Token.Expiration),
+                SigningCredentials = _appConfiguration.Token.SigningCredentials
             };
 
-            return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
+            var securityToken = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(securityToken);
         }
     }
 }

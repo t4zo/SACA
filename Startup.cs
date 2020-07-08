@@ -1,32 +1,31 @@
 using AutoMapper;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SACA.Authorization;
+using SACA.Constants;
 using SACA.Data;
 using SACA.Extensions;
 using SACA.i18n;
+using SACA.Interfaces;
 using SACA.Models;
-using SACA.Repositories;
-using SACA.Repositories.Interfaces;
 using SACA.Services;
-using SACA.Services.Interfaces;
 using SACA.Transactions;
-using SACA.Utilities;
 using System;
+using System.Reflection;
 
 namespace SACA
 {
     public class Startup
     {
         public IConfiguration Configuration { get; }
-
-        private const string _defaultCorsPolicyName = "localhost";
-
-        //private string _connection = null;
 
         public Startup(IConfiguration configuration)
         {
@@ -36,34 +35,24 @@ namespace SACA
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //var builder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("ConnectionStrings__DefaultConnection"));
-            //builder.ConnectionString = Configuration["ConnectionStrings__DefaultConnection"];
-
-            //_connection = builder.ConnectionString;
-
             services.AddTransient<IUserService, UserService>();
+            services.AddScoped<ITokenService, TokenService>();
             services.AddTransient<IImageService, ImageService>();
 
-            services.AddTransient<IUserRepository, UserRepository>();
-            services.AddTransient<ICategoryRepository, CategoryRepository>();
-            services.AddTransient<IUserCategoryRepository, UserCategoryRepository>();
-            services.AddTransient<IImageRepository, ImageRepository>();
+            services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+            services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
             services.AddTransient<IUnityOfWork, UnityOfWork>();
 
-            services.AddCustomCors(_defaultCorsPolicyName);
+            services.AddCustomCors(AuthorizationConstants.DefaultCorsPolicyName);
 
             services.AddDbContext<ApplicationDbContext>();
-            services.AddControllers();
+            services.AddControllers()
+                .AddFluentValidation(configureExpression => configureExpression.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
 
             services.AddJwtSecurity(Configuration);
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy(Constants.All, policy => policy.RequireRole(Constants.AllRoles));
-                options.AddPolicy(Constants.Administrador, policy => policy.RequireRole(Constants.Administrador));
-                options.AddPolicy(Constants.Usuario, policy => policy.RequireRole(Constants.Usuario));
-            });
+            services.AddAuthorization();
 
             services.AddIdentityCore<User>(options =>
             {
@@ -89,7 +78,7 @@ namespace SACA
                 options.LowercaseUrls = true;
             });
 
-            //services.AddSwagger();
+            services.AddSwagger();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -111,16 +100,9 @@ namespace SACA
             app.CreateRoles(serviceProvider, Configuration).Wait();
             app.CreateUsers(serviceProvider, Configuration).Wait();
 
-            app.UseCors(_defaultCorsPolicyName);
+            app.UseCors(AuthorizationConstants.DefaultCorsPolicyName);
 
-            //app.Run(async (context) =>
-            //{
-            //    await context.Response.WriteAsync($"ConnectionString: {_connection}");
-            //});
-
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
-            //app.UseSwagger();
-            //app.ConfigureSwagger();
+            app.UseConfiguredSwagger();
 
             app.UseHttpsRedirection();
 

@@ -1,50 +1,98 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SACA.Data;
 using SACA.Models;
-using SACA.Repositories.Interfaces;
-using SACA.Utilities;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using static SACA.Constants.AuthorizationConstants;
 
 namespace SACA.Controllers
 {
-    [Route("saca/v2/[controller]")]
-    [Authorize(Constants.All)]
-    [ApiController]
-    public class CategoriesController : ControllerBase
+    [Authorize(Permissions.Categories.View)]
+    public class CategoriesController : BaseApiController
     {
-        private readonly ICategoryRepository _categoryRepository;
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public CategoriesController(ICategoryRepository categoryRepository)
+        public CategoriesController(ApplicationDbContext context, UserManager<User> userManager)
         {
-            _categoryRepository = categoryRepository;
+            _context = context;
+            _userManager = userManager;
         }
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Category>>> GetAllHome()
+        public async Task<ActionResult<IEnumerable<Category>>> GetAll()
         {
-            return Ok(await _categoryRepository.GetAllAsync());
-        }
+            IEnumerable<Category> categories;
 
-        [HttpGet("{userId}")]
-        public async Task<ActionResult<IEnumerable<Category>>> GetAll(int userId)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!User.Identity.IsAuthenticated)
+            {
+                categories = await _context.Categories
+                    .Include(x => x.Images)
+                    .Where(x => x.Images.Any(x => x.CategoryId != 1))
+                    .ToListAsync();
 
-            var categories = await _categoryRepository.GetAllAsync(userId);
+                return Ok(categories);
+            }
+
+            var userId = int.Parse(_userManager.GetUserId(User));
+
+            categories = await _context.Categories
+               .Include(x => x.Images)
+               .Where(x => x.UserCategories.Any(uc => uc.UserId == userId))
+               .ToListAsync();
+
+            foreach (var category in categories)
+            {
+                IList<Image> images = new List<Image>();
+
+                foreach (var image in category.Images)
+                {
+                    if (image.UserId is null || image.UserId == userId)
+                    {
+                        image.User = null;
+                        image.Category = null;
+                        images.Add(image);
+                    }
+                }
+
+                category.Images = images;
+            }
+
 
             return Ok(categories);
         }
 
-        [HttpGet("{userId}/{categoryId}")]
-        public async Task<ActionResult<IEnumerable<Category>>> Get(int userId, int categoryId)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Category>> Get(int id)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var userId = int.Parse(_userManager.GetUserId(User));
 
-            var categories = await _categoryRepository.GetAsync(userId, categoryId);
+            var category = await _context.Categories
+               .Include(x => x.Images)
+               .Where(x => x.Id == id)
+               .Where(x => x.UserCategories.Any(uc => uc.UserId == userId))
+               .FirstOrDefaultAsync();
 
-            return Ok(categories);
+            IList<Image> images = new List<Image>();
+
+            foreach (var image in category.Images)
+            {
+                if (image.UserId is null || image.UserId == userId)
+                {
+                    image.User = null;
+                    image.Category = null;
+                    images.Add(image);
+                }
+            }
+
+            category.Images = images;
+
+            return Ok(category);
         }
     }
 }
