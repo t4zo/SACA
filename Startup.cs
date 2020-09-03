@@ -96,9 +96,9 @@ namespace SACA
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
 
-            app.SeedDatabase(serviceProvider).Wait();
-            app.CreateRoles(serviceProvider, Configuration).Wait();
-            app.CreateUsers(serviceProvider, Configuration).Wait();
+            app.SeedDatabase(serviceProvider).GetAwaiter().GetResult();
+            app.CreateRoles(serviceProvider, Configuration).GetAwaiter().GetResult();
+            app.CreateUsers(serviceProvider, Configuration).GetAwaiter().GetResult();
 
             app.UseCors(AuthorizationConstants.DefaultCorsPolicyName);
 

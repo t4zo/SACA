@@ -25,7 +25,7 @@ namespace SACA
                     else
                     {
                         webBuilder.UseSentry();
-                        webBuilder.UseStartup<Startup>().UseUrls("https://localhost:5501");
+                        webBuilder.UseStartup<Startup>().UseUrls("http://localhost:5501");
                     }
                 });
     }
