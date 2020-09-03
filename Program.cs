@@ -15,18 +15,8 @@ namespace SACA
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Heroku")
-                    {
-                        var PORT = Environment.GetEnvironmentVariable("PORT");
-
-                        webBuilder.UseStartup<Startup>()
-                        .UseUrls($"http://*:{PORT}");
-                    }
-                    else
-                    {
-                        webBuilder.UseSentry();
-                        webBuilder.UseStartup<Startup>().UseUrls("http://localhost:5501");
-                    }
+                    webBuilder.UseSentry();
+                    webBuilder.UseStartup<Startup>().UseUrls("http://localhost:5501");
                 });
     }
 }

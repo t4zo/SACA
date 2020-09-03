@@ -32,40 +32,9 @@ namespace SACA.Data
         {
             base.OnConfiguring(optionsBuilder);
 
-            string connectionString = GetConnectionEnvironmentString();
-
             optionsBuilder
-                .UseNpgsql(connectionString)
+                .UseNpgsql(_configuration.GetConnectionString("DefaultConnection"))
                 .UseSnakeCaseNamingConvention();
-        }
-
-        private string GetConnectionEnvironmentString()
-        {
-            var env = _configuration["ASPNETCORE_ENVIRONMENT"];
-
-            string connectionString = _configuration.GetConnectionString("DefaultConnection");
-
-            if (env == "Heroku")
-            {
-                var connUrl = _configuration["DATABASE_URL"];
-
-                // Parse connection URL to connection string for Npgsql
-                connUrl = connUrl.Replace("postgres://", string.Empty);
-
-                var pgUserPass = connUrl.Split("@")[0];
-                var pgHostPortDb = connUrl.Split("@")[1];
-                var pgHostPort = pgHostPortDb.Split("/")[0];
-
-                var pgHost = pgHostPort.Split(":")[0];
-                var pgDb = pgHostPortDb.Split("/")[1];
-                var pgUser = pgUserPass.Split(":")[0];
-                var pgPort = pgHostPort.Split(":")[1];
-                var pgPass = pgUserPass.Split(":")[1];
-
-                connectionString = $"Host={pgHost};Database={pgDb};User Id={pgUser};Port={pgPort};Password={pgPass}";
-            }
-
-            return connectionString;
         }
 
         //private void UseHiLoStartingSequence(ModelBuilder modelBuilder)
