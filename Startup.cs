@@ -89,24 +89,21 @@ namespace SACA
                 app.UseDeveloperExceptionPage();
             }
 
-            app.IsInDocker(serviceProvider, Configuration);
+            app.SeedDatabase(serviceProvider).GetAwaiter().GetResult();
+            app.CreateRoles(serviceProvider, Configuration).GetAwaiter().GetResult();
+            app.CreateUsers(serviceProvider, Configuration).GetAwaiter().GetResult();
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
 
-            app.SeedDatabase(serviceProvider).GetAwaiter().GetResult();
-            app.CreateRoles(serviceProvider, Configuration).GetAwaiter().GetResult();
-            app.CreateUsers(serviceProvider, Configuration).GetAwaiter().GetResult();
-
-            app.UseCors(AuthorizationConstants.DefaultCorsPolicyName);
+            app.UseHttpsRedirection();
 
             app.UseConfiguredSwagger();
 
-            app.UseHttpsRedirection();
-
             app.UseRouting();
+            app.UseCors(AuthorizationConstants.DefaultCorsPolicyName);
 
             app.UseAuthentication();
             app.UseAuthorization();
