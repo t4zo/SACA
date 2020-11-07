@@ -1,11 +1,11 @@
 using AutoMapper;
 using FluentValidation.AspNetCore;
+using Hellang.Middleware.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -17,7 +17,6 @@ using SACA.i18n;
 using SACA.Interfaces;
 using SACA.Models;
 using SACA.Services;
-using SACA.Transactions;
 using System;
 using System.Reflection;
 
@@ -32,7 +31,6 @@ namespace SACA
             Configuration = configuration;
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<IUserService, UserService>();
@@ -42,28 +40,29 @@ namespace SACA
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
             services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
-            services.AddTransient<IUnityOfWork, UnityOfWork>();
-
             services.AddCustomCors(AuthorizationConstants.DefaultCorsPolicyName);
 
             services.AddDbContext<ApplicationDbContext>();
-            services.AddControllers()
-                .AddFluentValidation(configureExpression => configureExpression.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
 
             services.AddJwtSecurity(Configuration);
 
-            services.AddAuthorization();
+            services.AddProblemDetails();
 
             services.AddIdentityCore<User>(options =>
             {
-                options.User.AllowedUserNameCharacters = String.Empty;
-
                 options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequiredLength = 6;
+                options.Password.RequiredUniqueChars = 1;
 
-                options.SignIn.RequireConfirmedEmail = false;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 10;
+                options.Lockout.AllowedForNewUsers = false;
+
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                options.User.RequireUniqueEmail = true;
             })
                 .AddSignInManager()
                 .AddRoles<IdentityRole<int>>()
@@ -73,21 +72,21 @@ namespace SACA
 
             services.AddAutoMapper(typeof(Startup));
 
-            services.AddRouting(options =>
-            {
-                options.LowercaseUrls = true;
-            });
-
             services.AddSwagger();
+
+            services.AddRouting(options => options.LowercaseUrls = true);
+         
+            services.AddControllers().AddFluentValidation(configureExpression => configureExpression.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseProblemDetails();
 
             app.SeedDatabase(serviceProvider).GetAwaiter().GetResult();
             app.CreateRoles(serviceProvider, Configuration).GetAwaiter().GetResult();

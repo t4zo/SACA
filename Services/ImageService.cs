@@ -31,7 +31,7 @@ namespace SACA.Services
             _cloudinaryEnvironmentFolder = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == AuthorizationConstants.Development ? AuthorizationConstants.SACA_Development : AuthorizationConstants.SACA;
         }
 
-        async Task<(string FullyQualifiedPublicId, string PublicId)> IImageService.UploadToCloudinaryAsync(ImageRequest model, int? userId)
+        public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(ImageRequest model, int? userId)
         {
             var uploadParams = new ImageUploadParams
             {
@@ -46,7 +46,7 @@ namespace SACA.Services
             return (result.FullyQualifiedPublicId, result.PublicId);
         }
 
-        async Task<bool> IImageService.RemoveImageFromCloudinaryAsync(Image model, User user)
+        public async Task<bool> RemoveImageFromCloudinaryAsync(Image model, User user)
         {
             var result = await _cloudinary.DeleteResourcesAsync(model.Url);
 
@@ -55,7 +55,7 @@ namespace SACA.Services
             return status != "not_found";
         }
 
-        async Task IImageService.RemoveFolderFromCloudinaryAsync(int userId)
+        public async Task RemoveFolderFromCloudinaryAsync(int userId)
         {
             var userFolder = $"{_cloudinaryEnvironmentFolder}/{AuthorizationConstants.users}/{userId}";
 
@@ -63,7 +63,7 @@ namespace SACA.Services
             await _cloudinary.DeleteFolderAsync(userFolder);
         }
 
-        MagickImage IImageService.Resize(MagickImage image, int width, int height)
+        public MagickImage Resize(MagickImage image, int width, int height)
         {
             MagickGeometry size = new MagickGeometry(width, height)
             {

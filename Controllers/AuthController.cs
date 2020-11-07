@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,8 +9,6 @@ using SACA.Interfaces;
 using SACA.Models;
 using SACA.Models.Requests;
 using SACA.Models.Responses;
-using SACA.Transactions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,23 +19,14 @@ namespace SACA.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
-        private readonly IUnityOfWork _uow;
         private readonly IMapper _mapper;
         private readonly IUserService _userService;
         private readonly IImageService _imageService;
 
-        public AuthController(
-            ApplicationDbContext context,
-            UserManager<User> userManager,
-            IUnityOfWork uow,
-            IMapper mapper,
-            IUserService userService,
-            IImageService imageService
-            )
+        public AuthController(ApplicationDbContext context, UserManager<User> userManager, IMapper mapper, IUserService userService, IImageService imageService)
         {
             _context = context;
             _userManager = userManager;
-            _uow = uow;
             _mapper = mapper;
             _userService = userService;
             _imageService = imageService;
@@ -65,20 +53,7 @@ namespace SACA.Controllers
         [HttpPost]
         public async Task<ActionResult> Create(SignUpRequest signUpRequest)
         {
-            UserResponse user;
-
-            try
-            {
-                user = await _userService.CreateAsync(signUpRequest);
-            }
-            catch (InvalidOperationException ex)
-            {
-                var errors = new Dictionary<string, string[]>
-                {
-                    { "first", new[] { ex.Message } } 
-                };
-                return ValidationProblem(new ValidationProblemDetails(errors));
-            }
+            var user = await _userService.CreateAsync(signUpRequest);
 
             var categories = await _context.Categories
                 .Include(x => x.Images)
@@ -90,7 +65,7 @@ namespace SACA.Controllers
                 await _context.UserCategories.AddAsync(new UserCategory { UserId = user.Id, CategoryId = category.Id });
             }
 
-            await _uow.CommitAsync();
+            await _context.SaveChangesAsync();
 
             //return RedirectToAction(nameof(Authenticate), new AuthenticationRequest { Email = signUpRequest.Email, Password = signUpRequest.Password });
             var userResponse = await _userService.AuthenticateAsync(signUpRequest.Email, signUpRequest.Password);
@@ -134,7 +109,7 @@ namespace SACA.Controllers
             await _imageService.RemoveFolderFromCloudinaryAsync(user.Id);
             await _userService.RemoveAsync(user);
 
-            await _uow.CommitAsync();
+            await _context.SaveChangesAsync();
 
             return Ok(user);
         }

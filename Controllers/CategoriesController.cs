@@ -7,11 +7,10 @@ using SACA.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static SACA.Constants.AuthorizationConstants;
 
 namespace SACA.Controllers
 {
-    [Authorize(Permissions.Categories.View)]
+    [Authorize]
     public class CategoriesController : BaseApiController
     {
         private readonly ApplicationDbContext _context;

@@ -14,10 +14,10 @@ namespace SACA.Services
 
         public TokenService(IOptionsMonitor<AppConfiguration> options)
         {
-            _appConfiguration = options.Get("AppConfiguration");
+            _appConfiguration = options.Get(nameof(AppConfiguration));
         }
 
-        string ITokenService.GenerateJWTToken(ClaimsIdentity claimsIdentity)
+        public string GenerateJWTToken(ClaimsIdentity claimsIdentity)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
 

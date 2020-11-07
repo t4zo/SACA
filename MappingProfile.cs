@@ -10,11 +10,9 @@ namespace SACA
     {
         public MappingProfile()
         {
+            CreateMap<Image, ImageResponse>().ReverseMap();
+            CreateMap<Image, ImageRequest>().ReverseMap();
             CreateMap<User, UserResponse>();
-            CreateMap<Image, ImageResponse>();
-            CreateMap<ImageResponse, Image>();
-            CreateMap<Image, ImageRequest>();
-            CreateMap<ImageRequest, Image>();
             CreateMap<UserResponse, AuthenticationRequest>();
         }
     }

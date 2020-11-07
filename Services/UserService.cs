@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using SACA.Constants;
 using SACA.Interfaces;
 using SACA.Models;
@@ -35,38 +33,35 @@ namespace SACA.Services
             _mapper = mapper;
         }
 
-        // TODO
-        async Task<UserResponse> IUserService.AuthenticateAsync(string username, string password, bool remember)
+        public async Task<UserResponse> AuthenticateAsync(string username, string password, bool remember)
         {
             var result = await _signInManager.PasswordSignInAsync(username, password, isPersistent: remember, lockoutOnFailure: false);
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                var user = await _userManager.FindByNameAsync(username);
-                var userClaims = await _userManager.GetClaimsAsync(user);
-                var roles = await _userManager.GetRolesAsync(user);
+                return null;
+            }
 
-                var claimsIdentity = new ClaimsIdentity(new Claim[]
-                    {
+            var user = await _userManager.FindByNameAsync(username);
+            var userClaims = await _userManager.GetClaimsAsync(user);
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var claimsIdentity = new ClaimsIdentity(new Claim[]
+                {
                         new Claim(ClaimTypes.Name, user.UserName),
                         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                         new Claim(AuthorizationConstants.Remember, remember.ToString().ToLower())
-                    });
+                });
+            claimsIdentity.AddClaims(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+            var token = _tokenService.GenerateJWTToken(claimsIdentity);
 
-                claimsIdentity.AddClaims(roles.Select(role => new Claim(ClaimTypes.Role, role)));
-                var token = _tokenService.GenerateJWTToken(claimsIdentity);
+            AddUserClaims(claimsIdentity, userClaims, roles);
 
-                AddUserClaims(claimsIdentity, userClaims, roles);
+            var userResponse = _mapper.Map<UserResponse>(user);
+            userResponse.Roles = roles;
+            userResponse.Token = token;
 
-                var userResponse = _mapper.Map<UserResponse>(user);
-
-                userResponse.Roles = roles;
-                userResponse.Token = token;
-
-                return userResponse;
-            }
-
-            return null;
+            return userResponse;
         }
 
         private void AddUserClaims(ClaimsIdentity claimsIdentity, IList<Claim> userClaims, IList<string> roles)
@@ -91,7 +86,7 @@ namespace SACA.Services
             }
         }
 
-        async Task<UserResponse> IUserService.CreateAsync(SignUpRequest signUpRequest)
+        public async Task<UserResponse> CreateAsync(SignUpRequest signUpRequest)
         {
             var user = new User
             {
@@ -119,26 +114,26 @@ namespace SACA.Services
             return _mapper.Map<UserResponse>(user);
         }
 
-        async Task<IEnumerable<UserResponse>> IUserService.GetUsersInRoleAsync(string role)
+        public async Task<IEnumerable<UserResponse>> GetUsersInRoleAsync(string role)
         {
             var users = await _userManager.GetUsersInRoleAsync(role);
-            var usersDto = _mapper.Map<IEnumerable<UserResponse>>(users);
+            var usersResponse = _mapper.Map<IEnumerable<UserResponse>>(users);
 
-            foreach (var userDto in usersDto)
+            foreach (var userResponse in usersResponse)
             {
-                var user = users.FirstOrDefault(u => u.Id == userDto.Id);
-                userDto.Roles = await _userManager.GetRolesAsync(user);
+                var user = users.FirstOrDefault(u => u.Id == userResponse.Id);
+                userResponse.Roles = await _userManager.GetRolesAsync(user);
             }
 
-            return usersDto.AsEnumerable();
+            return usersResponse;
         }
 
-        async Task<bool> IUserService.IsInRoleAsync(User user, string role)
+        public async Task<bool> IsInRoleAsync(User user, string role)
         {
             return await _userManager.IsInRoleAsync(user, role);
         }
 
-        async Task IUserService.RemoveAsync(User user)
+        public async Task RemoveAsync(User user)
         {
             await _userManager.DeleteAsync(user);
         }
