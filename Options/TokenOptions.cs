@@ -3,7 +3,7 @@ using System.Text;
 
 namespace SACA.Configurations
 {
-    public class TokenConfiguration
+    public class TokenOptions
     {
         public string Issuer { get; set; }
         public string Audience { get; set; }

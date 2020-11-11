@@ -1,29 +1,30 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using SACA.Constants;
+using SACA.Extensions;
 using SACA.Interfaces;
-using SACA.Models;
+using SACA.Models.Identity;
 using SACA.Models.Requests;
 using SACA.Models.Responses;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using static SACA.Constants.AuthorizationConstants;
 
 namespace SACA.Services
 {
     public class UserService : IUserService
     {
         private readonly ITokenService _tokenService;
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IMapper _mapper;
 
         public UserService(
             ITokenService tokenService,
-            UserManager<User> userManager,
-            SignInManager<User> signInManager,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
             IMapper mapper
             )
         {
@@ -37,11 +38,6 @@ namespace SACA.Services
         {
             var result = await _signInManager.PasswordSignInAsync(username, password, isPersistent: remember, lockoutOnFailure: false);
 
-            if (!result.Succeeded)
-            {
-                return null;
-            }
-
             var user = await _userManager.FindByNameAsync(username);
             var userClaims = await _userManager.GetClaimsAsync(user);
             var roles = await _userManager.GetRolesAsync(user);
@@ -52,6 +48,7 @@ namespace SACA.Services
                         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                         new Claim(AuthorizationConstants.Remember, remember.ToString().ToLower())
                 });
+
             claimsIdentity.AddClaims(roles.Select(role => new Claim(ClaimTypes.Role, role)));
             var token = _tokenService.GenerateJWTToken(claimsIdentity);
 
@@ -64,7 +61,7 @@ namespace SACA.Services
             return userResponse;
         }
 
-        private void AddUserClaims(ClaimsIdentity claimsIdentity, IList<Claim> userClaims, IList<string> roles)
+        private static void AddUserClaims(ClaimsIdentity claimsIdentity, IList<Claim> userClaims, IList<string> roles)
         {
             foreach (var role in roles)
             {
@@ -88,22 +85,17 @@ namespace SACA.Services
 
         public async Task<UserResponse> CreateAsync(SignUpRequest signUpRequest)
         {
-            var user = new User
+            var user = new ApplicationUser
             {
                 UserName = signUpRequest.UserName,
                 Email = signUpRequest.Email,
             };
 
-            var result = await _userManager.CreateAsync(user, signUpRequest.Password);
-
-            if (!result.Succeeded)
-            {
-                throw new InvalidOperationException(result.Errors.FirstOrDefault().Description);
-            }
+            await _userManager.CreateAsync(user, signUpRequest.Password);
 
             foreach (var role in signUpRequest.Roles)
             {
-                if (AuthorizationConstants.Roles.All.Contains(role))
+                if (typeof(Roles).GetAllPublicConstantValues<string>().Contains(role))
                 {
                     await _userManager.AddToRoleAsync(user, role);
                 }
@@ -128,12 +120,12 @@ namespace SACA.Services
             return usersResponse;
         }
 
-        public async Task<bool> IsInRoleAsync(User user, string role)
+        public async Task<bool> IsInRoleAsync(ApplicationUser user, string role)
         {
             return await _userManager.IsInRoleAsync(user, role);
         }
 
-        public async Task RemoveAsync(User user)
+        public async Task RemoveAsync(ApplicationUser user)
         {
             await _userManager.DeleteAsync(user);
         }

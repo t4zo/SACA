@@ -2,12 +2,13 @@
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
+using static SACA.Constants.AuthorizationConstants;
 
 namespace SACA.Authorization
 {
     public class PermissionPolicyProvider : IAuthorizationPolicyProvider
     {
-        public DefaultAuthorizationPolicyProvider _fallbackPolicyProvider { get; }
+        private DefaultAuthorizationPolicyProvider _fallbackPolicyProvider { get; }
 
         public PermissionPolicyProvider(IOptions<AuthorizationOptions> options)
         {
@@ -23,7 +24,7 @@ namespace SACA.Authorization
         // O nome da política deve corresponder à permissão necessária.
         public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
         {
-            if (policyName.StartsWith("Permissions", StringComparison.OrdinalIgnoreCase))
+            if (policyName.StartsWith(CustomClaimTypes.Permissions, StringComparison.OrdinalIgnoreCase))
             {
                 var policy = new AuthorizationPolicyBuilder();
                 policy.AddRequirements(new PermissionRequirement(policyName));

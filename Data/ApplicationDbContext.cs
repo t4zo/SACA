@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SACA.Models;
+using SACA.Models.Identity;
 using System.Reflection;
 
 namespace SACA.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, int>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, int>
     {
         private readonly IConfiguration _configuration;
 
@@ -18,7 +18,6 @@ namespace SACA.Data
         }
 
         public virtual DbSet<Category> Categories { get; set; }
-        public virtual DbSet<UserCategory> UserCategories { get; set; }
         public virtual DbSet<Image> Images { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)

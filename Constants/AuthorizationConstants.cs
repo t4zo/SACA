@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
-
-namespace SACA.Constants
+﻿namespace SACA.Constants
 {
     public static class AuthorizationConstants
     {
+
+        public const string AllowedOrigins = "AllowedOrigins";
+
+        public const string Remember = "rmb";
+
         public static class Roles
         {
             public const string AllName = "All";
@@ -11,13 +14,11 @@ namespace SACA.Constants
             public const string Superuser = "Superuser";
 
             public const string User = "User";
-
-            public static IEnumerable<string> All = new List<string> { Superuser, User };
         }
 
         public static class CustomClaimTypes
         {
-            public const string Permission = "Permission";
+            public const string Permissions = "Permissions";
         }
 
         public static class Permissions
@@ -44,21 +45,5 @@ namespace SACA.Constants
                 public const string Delete = "Permissions.Images.Delete";
             }
         }
-
-        public static class Database
-        {
-            public static int StartValueId = 100;
-
-            public const string DefaultPassword = "123qwe";
-        }
-
-        public const string DefaultCorsPolicyName = "localhost";
-
-        public const string Remember = "rmb";
-
-        public const string users = "users";
-        public const string Development = "Development";
-        public const string SACA_Development = "SACA_Development";
-        public const string SACA = "SACA";
     }
 }

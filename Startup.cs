@@ -10,12 +10,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SACA.Authorization;
-using SACA.Constants;
+using SACA.Configurations;
 using SACA.Data;
 using SACA.Extensions;
 using SACA.i18n;
 using SACA.Interfaces;
-using SACA.Models;
+using SACA.Models.Identity;
 using SACA.Services;
 using System;
 using System.Reflection;
@@ -40,15 +40,16 @@ namespace SACA
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
             services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
-            services.AddCustomCors(AuthorizationConstants.DefaultCorsPolicyName);
+            services.AddCustomCors();
 
             services.AddDbContext<ApplicationDbContext>();
+            services.AddOptions<AppOptions>().Bind(Configuration.GetSection(nameof(AppOptions)));
 
-            services.AddJwtSecurity(Configuration);
+            services.AddJwtSecurity();
 
             services.AddProblemDetails();
 
-            services.AddIdentityCore<User>(options =>
+            services.AddIdentityCore<ApplicationUser>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
@@ -65,7 +66,7 @@ namespace SACA
                 options.User.RequireUniqueEmail = true;
             })
                 .AddSignInManager()
-                .AddRoles<IdentityRole<int>>()
+                .AddRoles<ApplicationRole>()
                 .AddErrorDescriber<PortugueseIdentityErrorDescriber>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
@@ -89,8 +90,8 @@ namespace SACA
             app.UseProblemDetails();
 
             app.SeedDatabase(serviceProvider).GetAwaiter().GetResult();
-            app.CreateRoles(serviceProvider, Configuration).GetAwaiter().GetResult();
-            app.CreateUsers(serviceProvider, Configuration).GetAwaiter().GetResult();
+            app.CreateRoles(serviceProvider).GetAwaiter().GetResult();
+            app.CreateUsers(serviceProvider).GetAwaiter().GetResult();
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
@@ -102,7 +103,7 @@ namespace SACA
             app.UseConfiguredSwagger();
 
             app.UseRouting();
-            app.UseCors(AuthorizationConstants.DefaultCorsPolicyName);
+            app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();

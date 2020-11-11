@@ -12,7 +12,7 @@ namespace SACA.Data.Mappings
             builder.HasKey(image => image.Id);
 
             builder.Property(c => c.Id)
-                .HasIdentityOptions(startValue: AuthorizationConstants.Database.StartValueId);
+                .HasIdentityOptions(startValue: DatabaseConstants.StartValueId);
 
             builder.HasOne(image => image.Category)
                 .WithMany(category => category.Images)

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using SACA.Models;
+using SACA.Models.Identity;
 using System.Linq;
 using System.Threading.Tasks;
 using static SACA.Constants.AuthorizationConstants;
@@ -9,10 +9,10 @@ namespace SACA.Authorization
 {
     public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
     {
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
-        public PermissionAuthorizationHandler(UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager)
+        public PermissionAuthorizationHandler(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -38,7 +38,7 @@ namespace SACA.Authorization
 
             var userClaims = await _userManager.GetClaimsAsync(user);
             var userPermissions = userClaims.Where(x =>
-                    x.Type == CustomClaimTypes.Permission &&
+                    x.Type == CustomClaimTypes.Permissions &&
                     x.Value == requirement.Permission &&
                     x.Issuer == "LOCAL AUTHORITY"
                 ).Select(x => x.Value);
@@ -58,7 +58,7 @@ namespace SACA.Authorization
                 var roleClaims = await _roleManager.GetClaimsAsync(role);
 
                 var rolePermissions = roleClaims.Where(x =>
-                    x.Type == CustomClaimTypes.Permission &&
+                    x.Type == CustomClaimTypes.Permissions &&
                     x.Value == requirement.Permission &&
                     x.Issuer == "LOCAL AUTHORITY"
                 ).Select(x => x.Value);

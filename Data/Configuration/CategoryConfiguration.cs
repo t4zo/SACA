@@ -11,7 +11,7 @@ namespace SACA.Data.Mappings
         {
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Id).HasIdentityOptions(startValue: AuthorizationConstants.Database.StartValueId);
+            builder.Property(x => x.Id).HasIdentityOptions(startValue: DatabaseConstants.StartValueId);
         }
     }
 }

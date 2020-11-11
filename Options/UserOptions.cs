@@ -2,7 +2,7 @@
 
 namespace SACA.Configurations
 {
-    public class UserConfiguration
+    public class UserOptions
     {
         public string Email { get; set; }
         public string UserName { get; set; }

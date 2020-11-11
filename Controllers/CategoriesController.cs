@@ -4,19 +4,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SACA.Data;
 using SACA.Models;
+using SACA.Models.Identity;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace SACA.Controllers
 {
-    [Authorize]
     public class CategoriesController : BaseApiController
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<User> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public CategoriesController(ApplicationDbContext context, UserManager<User> userManager)
+        public CategoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -26,23 +26,19 @@ namespace SACA.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetAll()
         {
-            IEnumerable<Category> categories;
-
             if (!User.Identity.IsAuthenticated)
             {
-                categories = await _context.Categories
+                return await _context.Categories
                     .Include(x => x.Images)
                     .Where(x => x.Images.Any(x => x.CategoryId != 1))
                     .ToListAsync();
-
-                return Ok(categories);
             }
 
             var userId = int.Parse(_userManager.GetUserId(User));
 
-            categories = await _context.Categories
+            var categories = await _context.Categories
                .Include(x => x.Images)
-               .Where(x => x.UserCategories.Any(uc => uc.UserId == userId))
+               .Include(x => x.ApplicationUsers.Any(au => au.Id == userId))
                .ToListAsync();
 
             foreach (var category in categories)
@@ -63,7 +59,7 @@ namespace SACA.Controllers
             }
 
 
-            return Ok(categories);
+            return categories;
         }
 
         [HttpGet("{id}")]
@@ -73,11 +69,13 @@ namespace SACA.Controllers
 
             var category = await _context.Categories
                .Include(x => x.Images)
-               .Where(x => x.Id == id)
-               .Where(x => x.UserCategories.Any(uc => uc.UserId == userId))
+               .Include(x => x.ApplicationUsers)
+               .Where(X => X.Id == id && X.ApplicationUsers.Any(au => au.Id == userId))
                .FirstOrDefaultAsync();
 
-            IList<Image> images = new List<Image>();
+            category.ApplicationUsers = null;
+
+            var images = new List<Image>();
 
             foreach (var image in category.Images)
             {
@@ -91,7 +89,7 @@ namespace SACA.Controllers
 
             category.Images = images;
 
-            return Ok(category);
+            return category;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using SACA.Models;
 using SACA.Models.Dto;
+using SACA.Models.Identity;
 using SACA.Models.Requests;
 using SACA.Models.Responses;
 
@@ -12,7 +13,7 @@ namespace SACA
         {
             CreateMap<Image, ImageResponse>().ReverseMap();
             CreateMap<Image, ImageRequest>().ReverseMap();
-            CreateMap<User, UserResponse>();
+            CreateMap<ApplicationUser, UserResponse>();
             CreateMap<UserResponse, AuthenticationRequest>();
         }
     }

@@ -1,24 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SACA.Configurations;
 
 namespace SACA.Extensions
 {
-    public static class JwtSecurityExtension
+    public static class JwtSecurityExtensions
     {
-        public static IServiceCollection AddJwtSecurity(
-            this IServiceCollection services,
-            IConfiguration configuration
-            )
+        public static IServiceCollection AddJwtSecurity(this IServiceCollection services)
         {
-            //var appConfiguration = configuration.GetSection("AppConfiguration").Get<AppConfiguration>();
-            var appConfigurationSection = configuration.GetSection("AppConfiguration");
-            services.Configure<AppConfiguration>("AppConfiguration", appConfigurationSection);
-
-            var appConfiguration = appConfigurationSection.Get<AppConfiguration>();
+            var serviceProvider = services.BuildServiceProvider();
+            var appConfiguration = serviceProvider.GetRequiredService<IOptionsSnapshot<AppOptions>>().Value;
 
             services.AddAuthentication(options =>
             {

@@ -1,4 +1,4 @@
-﻿using SACA.Models;
+﻿using SACA.Models.Identity;
 using SACA.Models.Requests;
 using SACA.Models.Responses;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace SACA.Interfaces
         Task<UserResponse> AuthenticateAsync(string email, string password, bool remember = false);
         Task<UserResponse> CreateAsync(SignUpRequest signUpDto);
         Task<IEnumerable<UserResponse>> GetUsersInRoleAsync(string role);
-        Task<bool> IsInRoleAsync(User user, string role);
-        Task RemoveAsync(User user);
+        Task<bool> IsInRoleAsync(ApplicationUser user, string role);
+        Task RemoveAsync(ApplicationUser user);
     }
 }

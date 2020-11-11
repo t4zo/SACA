@@ -10,11 +10,11 @@ namespace SACA.Services
 {
     public class TokenService : ITokenService
     {
-        private readonly AppConfiguration _appConfiguration;
+        private readonly AppOptions _appOptions;
 
-        public TokenService(IOptionsMonitor<AppConfiguration> options)
+        public TokenService(IOptionsSnapshot<AppOptions> options)
         {
-            _appConfiguration = options.Get(nameof(AppConfiguration));
+            _appOptions = options.Value;
         }
 
         public string GenerateJWTToken(ClaimsIdentity claimsIdentity)
@@ -24,12 +24,12 @@ namespace SACA.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = claimsIdentity,
-                Issuer = _appConfiguration.Token.Issuer,
-                Audience = _appConfiguration.Token.Audience,
+                Issuer = _appOptions.Token.Issuer,
+                Audience = _appOptions.Token.Audience,
                 IssuedAt = DateTime.UtcNow,
                 NotBefore = DateTime.UtcNow,
-                Expires = DateTime.UtcNow.AddHours(_appConfiguration.Token.Expiration),
-                SigningCredentials = _appConfiguration.Token.SigningCredentials
+                Expires = DateTime.UtcNow.AddHours(_appOptions.Token.Expiration),
+                SigningCredentials = _appOptions.Token.SigningCredentials
             };
 
             var securityToken = tokenHandler.CreateToken(tokenDescriptor);

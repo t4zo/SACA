@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using SACA.Models.Identity;
+using System.Collections.Generic;
 
 namespace SACA.Models
 {
@@ -7,7 +8,7 @@ namespace SACA.Models
         public string Name { get; set; }
         public string IconName { get; set; }
 
-        public ICollection<UserCategory> UserCategories { get; set; }
+        public ICollection<ApplicationUser> ApplicationUsers { get; set; }
         public ICollection<Image> Images { get; set; }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using ImageMagick;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,23 +7,22 @@ using SACA.Data;
 using SACA.Interfaces;
 using SACA.Models;
 using SACA.Models.Dto;
+using SACA.Models.Identity;
 using SACA.Models.Responses;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace SACA.Controllers
 {
-    [Authorize]
     public class ImagesController : BaseApiController
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<User> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IImageService _imageService;
         private readonly IMapper _mapper;
 
-        public ImagesController(ApplicationDbContext context, UserManager<User> userManager, IImageService imageService, IMapper mapper)
+        public ImagesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IImageService imageService, IMapper mapper)
         {
             _context = context;
             _userManager = userManager;
@@ -33,7 +31,7 @@ namespace SACA.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<IEnumerable<ImageResponse>>> Get(int id)
+        public async Task<ActionResult<ImageResponse>> Get(int id)
         {
             var userId = int.Parse(_userManager.GetUserId(User));
 
@@ -43,14 +41,7 @@ namespace SACA.Controllers
                 .Where(x => x.Id == id && x.UserId == userId)
                 .FirstOrDefaultAsync();
 
-            if (image is null)
-            {
-                return Forbid();
-            }
-
-            var imageResponse = _mapper.Map<ImageResponse>(image);
-
-            return Ok(imageResponse);
+            return _mapper.Map<ImageResponse>(image);
         }
 
         [HttpPost]
@@ -58,29 +49,29 @@ namespace SACA.Controllers
         {
             var image = _mapper.Map<Image>(imageRequest);
 
-            var userId = int.Parse(_userManager.GetUserId(User));
-            image.UserId = userId;
+            var user = await _userManager.FindByNameAsync(User.Identity.Name);
+            image.UserId = user.Id;
 
             using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
             magickImage.Resize(110, 150);
 
             imageRequest.Base64 = magickImage.ToBase64();
 
-            (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageRequest, userId);
+            (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageRequest, user.Id);
 
             await _context.Images.AddAsync(image);
 
-            var userCategory = new UserCategory { UserId = userId, CategoryId = image.CategoryId };
+            var category = await _context.Categories.Include(x => x.ApplicationUsers).FirstOrDefaultAsync(x => x.Id == image.CategoryId);
 
-            var userCategoryExists = await _context.UserCategories.AnyAsync(uc => uc.CategoryId == userCategory.CategoryId && uc.UserId == userCategory.UserId);
+            var userCategoryExists = user.Categories.Any(x => x.Id == category.Id);
             if (!userCategoryExists)
             {
-                await _context.UserCategories.AddAsync(userCategory);
+                category.ApplicationUsers.Add(user);
             }
 
             await _context.SaveChangesAsync();
 
-            return Ok(_mapper.Map<ImageResponse>(image));
+            return _mapper.Map<ImageResponse>(image);
         }
 
         [HttpPut("{id}")]
@@ -110,7 +101,7 @@ namespace SACA.Controllers
             _context.Entry(image).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            return Ok(_mapper.Map<ImageResponse>(image));
+            return _mapper.Map<ImageResponse>(image);
         }
 
         [HttpDelete("{id}")]
@@ -129,7 +120,7 @@ namespace SACA.Controllers
             _context.Remove(image);
             await _context.SaveChangesAsync();
 
-            return Ok(_mapper.Map<ImageResponse>(image));
+            return _mapper.Map<ImageResponse>(image);
         }
 
         [HttpPost("superuser")]
@@ -162,7 +153,7 @@ namespace SACA.Controllers
             _context.Remove(image);
             await _context.SaveChangesAsync();
 
-            return Ok(_mapper.Map<ImageResponse>(image));
+            return _mapper.Map<ImageResponse>(image);
         }
     }
 }

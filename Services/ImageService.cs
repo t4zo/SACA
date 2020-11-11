@@ -1,11 +1,13 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using ImageMagick;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using SACA.Constants;
+using Microsoft.Extensions.Hosting;
 using SACA.Interfaces;
 using SACA.Models;
 using SACA.Models.Dto;
+using SACA.Models.Identity;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,18 +19,18 @@ namespace SACA.Services
         private readonly Cloudinary _cloudinary;
         private readonly string _cloudinaryEnvironmentFolder;
 
-        public ImageService(IConfiguration configuration)
+        public ImageService(IConfiguration configuration, IWebHostEnvironment env)
         {
+            _cloudinaryEnvironmentFolder = env.IsDevelopment() ? $"{nameof(SACA)}_{env.EnvironmentName}" : nameof(SACA);
             _cloudinary = new Cloudinary(
                 new Account
                 {
-                    Cloud = configuration["CloudinaryConfiguration:Cloud"],
-                    ApiKey = configuration["CloudinaryConfiguration:ApiKey"],
-                    ApiSecret = configuration["CloudinaryConfiguration:ApiSecret"]
+                    Cloud = configuration["CloudinaryOptions:Cloud"],
+                    ApiKey = configuration["CloudinaryOptions:ApiKey"],
+                    ApiSecret = configuration["CloudinaryOptions:ApiSecret"]
                 }
             );
 
-            _cloudinaryEnvironmentFolder = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == AuthorizationConstants.Development ? AuthorizationConstants.SACA_Development : AuthorizationConstants.SACA;
         }
 
         public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(ImageRequest model, int? userId)
@@ -36,7 +38,7 @@ namespace SACA.Services
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription($@"data:image/png;base64,{model.Base64}"),
-                PublicId = userId.HasValue ? $"{_cloudinaryEnvironmentFolder}/{AuthorizationConstants.users}/{userId}/{Guid.NewGuid()}" : $"{_cloudinaryEnvironmentFolder}/_defaults/{Guid.NewGuid()}",
+                PublicId = userId.HasValue ? $"{_cloudinaryEnvironmentFolder}/users/{userId}/{Guid.NewGuid()}" : $"{_cloudinaryEnvironmentFolder}/_defaults/{Guid.NewGuid()}",
                 Async = "true",
                 Overwrite = true
             };
@@ -46,7 +48,7 @@ namespace SACA.Services
             return (result.FullyQualifiedPublicId, result.PublicId);
         }
 
-        public async Task<bool> RemoveImageFromCloudinaryAsync(Image model, User user)
+        public async Task<bool> RemoveImageFromCloudinaryAsync(Image model, ApplicationUser user)
         {
             var result = await _cloudinary.DeleteResourcesAsync(model.Url);
 
@@ -57,7 +59,7 @@ namespace SACA.Services
 
         public async Task RemoveFolderFromCloudinaryAsync(int userId)
         {
-            var userFolder = $"{_cloudinaryEnvironmentFolder}/{AuthorizationConstants.users}/{userId}";
+            var userFolder = $"{_cloudinaryEnvironmentFolder}/users/{userId}";
 
             await _cloudinary.DeleteResourcesByPrefixAsync(userFolder);
             await _cloudinary.DeleteFolderAsync(userFolder);

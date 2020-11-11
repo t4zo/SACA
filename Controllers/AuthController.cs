@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SACA.Constants;
 using SACA.Data;
 using SACA.Interfaces;
-using SACA.Models;
+using SACA.Models.Identity;
 using SACA.Models.Requests;
 using SACA.Models.Responses;
 using System.Collections.Generic;
@@ -18,12 +18,12 @@ namespace SACA.Controllers
     public class AuthController : BaseApiController
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<User> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
         private readonly IUserService _userService;
         private readonly IImageService _imageService;
 
-        public AuthController(ApplicationDbContext context, UserManager<User> userManager, IMapper mapper, IUserService userService, IImageService imageService)
+        public AuthController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMapper mapper, IUserService userService, IImageService imageService)
         {
             _context = context;
             _userManager = userManager;
@@ -34,50 +34,39 @@ namespace SACA.Controllers
 
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public async Task<ActionResult<UserResponse>> Authenticate(AuthenticationRequest authenticationRequest)
+        public async Task<ActionResult<AuthenticationResponse>> Authenticate(AuthenticationRequest authenticationRequest)
         {
             var userResponse = await _userService.AuthenticateAsync(authenticationRequest.Email, authenticationRequest.Password, authenticationRequest.Remember);
-            if (userResponse is null)
-            {
-                var errors = new Dictionary<string, string[]>
-                {
-                    { "first", new[] { "Email e/ou senha inválido(s)" } }
-                };
-                return ValidationProblem(new ValidationProblemDetails(errors));
-            }
 
-            return Ok(new AuthenticationResponse { Success = true, Message = "Usuário logado!", User = userResponse });
+            return new AuthenticationResponse { Success = true, Message = "Usuário logado!", User = userResponse };
         }
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult> Create(SignUpRequest signUpRequest)
+        public async Task<ActionResult<AuthenticationResponse>> Create(SignUpRequest signUpRequest)
         {
-            var user = await _userService.CreateAsync(signUpRequest);
+            var userResponseCreated = await _userService.CreateAsync(signUpRequest);
+            var user = await _userManager.FindByIdAsync(userResponseCreated.Id.ToString());
 
-            var categories = await _context.Categories
+            user.Categories = await _context.Categories
+                .AsNoTracking()
                 .Include(x => x.Images)
                 .Where(x => x.Images.Any(x => x.CategoryId != 1))
                 .ToListAsync();
-
-            foreach (var category in categories)
-            {
-                await _context.UserCategories.AddAsync(new UserCategory { UserId = user.Id, CategoryId = category.Id });
-            }
 
             await _context.SaveChangesAsync();
 
             //return RedirectToAction(nameof(Authenticate), new AuthenticationRequest { Email = signUpRequest.Email, Password = signUpRequest.Password });
             var userResponse = await _userService.AuthenticateAsync(signUpRequest.Email, signUpRequest.Password);
-            return Ok(new AuthenticationResponse { Success = true, Message = "Usuário cadastrado!", User = userResponse });
+            return new AuthenticationResponse { Success = true, Message = "Usuário cadastrado!", User = userResponse };
         }
 
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserResponse>>> GetAll()
+        public async Task<ActionResult<List<UserResponse>>> GetAll()
         {
             var users = await _userManager.Users.ToListAsync();
-            var usersResponses = _mapper.Map<IEnumerable<UserResponse>>(users);
+            var usersResponses = _mapper.Map<List<UserResponse>>(users);
 
             foreach (var userResponse in usersResponses)
             {
@@ -85,7 +74,7 @@ namespace SACA.Controllers
                 userResponse.Roles = await _userManager.GetRolesAsync(user);
             }
 
-            return Ok(usersResponses);
+            return usersResponses;
         }
 
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
@@ -93,15 +82,16 @@ namespace SACA.Controllers
         public async Task<ActionResult<UserResponse>> Get(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
+
             var userResponse = _mapper.Map<UserResponse>(user);
             userResponse.Roles = await _userManager.GetRolesAsync(user);
 
-            return Ok(userResponse);
+            return userResponse;
         }
 
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<User>> Remove(string id)
+        public async Task<ActionResult<ApplicationUser>> Remove(string id)
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
             if (user is null) return BadRequest("Usuário inválido");
@@ -111,7 +101,7 @@ namespace SACA.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(user);
+            return user;
         }
     }
 }
