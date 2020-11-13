@@ -145,7 +145,7 @@ namespace SACA.Controllers
                 return BadRequest("Imagem inválida");
             }
 
-            await _imageService.RemoveImageFromCloudinaryAsync(image, user: null);
+            await _imageService.RemoveImageFromCloudinaryAsync(image);
 
             _context.Remove(image);
             await _context.SaveChangesAsync();
