@@ -1,4 +1,4 @@
-﻿namespace SACA.Models.Dto
+﻿namespace SACA.Models.Requests
 {
     public class ImageRequest
     {

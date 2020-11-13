@@ -2,12 +2,13 @@
 using CloudinaryDotNet.Actions;
 using ImageMagick;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using SACA.Interfaces;
 using SACA.Models;
-using SACA.Models.Dto;
+using SACA.Models.Requests;
 using SACA.Models.Identity;
+using SACA.Options;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,18 +20,10 @@ namespace SACA.Services
         private readonly Cloudinary _cloudinary;
         private readonly string _cloudinaryEnvironmentFolder;
 
-        public ImageService(IConfiguration configuration, IWebHostEnvironment env)
+        public ImageService(IOptionsSnapshot<CloudinaryOptions> cloudinaryOptions, IWebHostEnvironment env)
         {
             _cloudinaryEnvironmentFolder = env.IsDevelopment() ? $"{nameof(SACA)}_{env.EnvironmentName}" : nameof(SACA);
-            _cloudinary = new Cloudinary(
-                new Account
-                {
-                    Cloud = configuration["CloudinaryOptions:Cloud"],
-                    ApiKey = configuration["CloudinaryOptions:ApiKey"],
-                    ApiSecret = configuration["CloudinaryOptions:ApiSecret"]
-                }
-            );
-
+            _cloudinary = new Cloudinary(cloudinaryOptions.Value.ApiEnvironmentVariable);
         }
 
         public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(ImageRequest model, int? userId)
@@ -39,7 +32,7 @@ namespace SACA.Services
             {
                 File = new FileDescription($@"data:image/png;base64,{model.Base64}"),
                 PublicId = userId.HasValue ? $"{_cloudinaryEnvironmentFolder}/users/{userId}/{Guid.NewGuid()}" : $"{_cloudinaryEnvironmentFolder}/_defaults/{Guid.NewGuid()}",
-                Async = "true",
+                Async = true.ToString(),
                 Overwrite = true
             };
 

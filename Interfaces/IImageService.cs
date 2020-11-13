@@ -1,6 +1,6 @@
 ﻿using ImageMagick;
 using SACA.Models;
-using SACA.Models.Dto;
+using SACA.Models.Requests;
 using SACA.Models.Identity;
 using System.Threading.Tasks;
 

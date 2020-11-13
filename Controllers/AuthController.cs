@@ -34,16 +34,16 @@ namespace SACA.Controllers
 
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public async Task<ActionResult<AuthenticationResponse>> Authenticate(AuthenticationRequest authenticationRequest)
+        public async Task<ActionResult<SignInResponse>> Authenticate(SignInRequest authenticationRequest)
         {
             var userResponse = await _userService.AuthenticateAsync(authenticationRequest.Email, authenticationRequest.Password, authenticationRequest.Remember);
 
-            return new AuthenticationResponse { Success = true, Message = "Usuário logado!", User = userResponse };
+            return new SignInResponse { Success = true, Message = "Usuário logado!", User = userResponse };
         }
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult<AuthenticationResponse>> Create(SignUpRequest signUpRequest)
+        public async Task<ActionResult<SignInResponse>> Create(SignUpRequest signUpRequest)
         {
             var userResponseCreated = await _userService.CreateAsync(signUpRequest);
             var user = await _userManager.FindByIdAsync(userResponseCreated.Id.ToString());
@@ -58,7 +58,7 @@ namespace SACA.Controllers
 
             //return RedirectToAction(nameof(Authenticate), new AuthenticationRequest { Email = signUpRequest.Email, Password = signUpRequest.Password });
             var userResponse = await _userService.AuthenticateAsync(signUpRequest.Email, signUpRequest.Password);
-            return new AuthenticationResponse { Success = true, Message = "Usuário cadastrado!", User = userResponse };
+            return new SignInResponse { Success = true, Message = "Usuário cadastrado!", User = userResponse };
         }
 
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]

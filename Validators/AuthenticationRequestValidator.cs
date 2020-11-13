@@ -3,7 +3,7 @@ using SACA.Models.Requests;
 
 namespace SACA.Validators
 {
-    public class AuthenticationRequestValidator : AbstractValidator<AuthenticationRequest>
+    public class AuthenticationRequestValidator : AbstractValidator<SignInRequest>
     {
         public AuthenticationRequestValidator()
         {

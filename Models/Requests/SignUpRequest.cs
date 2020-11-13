@@ -8,6 +8,6 @@ namespace SACA.Models.Requests
         public string Email { get; set; }
         public string Password { get; set; }
         public string ConfirmPassword { get; set; }
-        public IEnumerable<string> Roles { get; set; }
+        public ICollection<string> Roles { get; set; }
     }
 }

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SACA.Authorization;
-using SACA.Configurations;
+using SACA.Options;
 using SACA.Data;
 using SACA.Extensions;
 using SACA.i18n;
@@ -43,7 +43,9 @@ namespace SACA
             services.AddCustomCors();
 
             services.AddDbContext<ApplicationDbContext>();
+
             services.AddOptions<AppOptions>().Bind(Configuration.GetSection(nameof(AppOptions)));
+            services.AddOptions<CloudinaryOptions>().Bind(Configuration.GetSection(nameof(CloudinaryOptions)));
 
             services.AddJwtSecurity();
 

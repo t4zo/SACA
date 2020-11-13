@@ -1,7 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace SACA.Configurations
+namespace SACA.Options
 {
     public class TokenOptions
     {

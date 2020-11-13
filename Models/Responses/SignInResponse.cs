@@ -1,6 +1,6 @@
 ﻿namespace SACA.Models.Responses
 {
-    public class AuthenticationResponse
+    public class SignInResponse
     {
         public bool Success { get; set; }
         public string Message { get; set; }

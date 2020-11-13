@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using SACA.Configurations;
+using SACA.Options;
 using SACA.Interfaces;
 using System;
 using System.IdentityModel.Tokens.Jwt;

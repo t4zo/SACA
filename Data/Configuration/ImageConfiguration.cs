@@ -11,8 +11,11 @@ namespace SACA.Data.Mappings
         {
             builder.HasKey(image => image.Id);
 
-            builder.Property(c => c.Id)
+            builder.Property(image => image.Id)
                 .HasIdentityOptions(startValue: DatabaseConstants.StartValueId);
+
+            builder.Property(image => image.UserId)
+                .IsRequired(false);
 
             builder.HasOne(image => image.Category)
                 .WithMany(category => category.Images)

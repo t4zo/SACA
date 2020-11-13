@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using SACA.Interfaces;
 using SACA.Models;
-using SACA.Models.Dto;
+using SACA.Models.Requests;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
