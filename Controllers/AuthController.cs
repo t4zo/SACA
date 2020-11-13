@@ -36,7 +36,7 @@ namespace SACA.Controllers
         [HttpPost("authenticate")]
         public async Task<ActionResult<SignInResponse>> Authenticate(SignInRequest authenticationRequest)
         {
-            var userResponse = await _userService.AuthenticateAsync(authenticationRequest.Email, authenticationRequest.Password, authenticationRequest.Remember);
+            var userResponse = await _userService.SignInAsync(authenticationRequest.Email, authenticationRequest.Password, authenticationRequest.Remember);
 
             return new SignInResponse { Success = true, Message = "Usuário logado!", User = userResponse };
         }
@@ -45,19 +45,18 @@ namespace SACA.Controllers
         [HttpPost]
         public async Task<ActionResult<SignInResponse>> Create(SignUpRequest signUpRequest)
         {
-            var userResponseCreated = await _userService.CreateAsync(signUpRequest);
-            var user = await _userManager.FindByIdAsync(userResponseCreated.Id.ToString());
+            var userCreated = await _userService.CreateAsync(signUpRequest);
+            var user = await _userManager.FindByIdAsync(userCreated.Id.ToString());
 
             user.Categories = await _context.Categories
-                .AsNoTracking()
                 .Include(x => x.Images)
+                .AsNoTracking()
                 .Where(x => x.Images.Any(x => x.CategoryId != 1))
                 .ToListAsync();
 
             await _context.SaveChangesAsync();
 
-            //return RedirectToAction(nameof(Authenticate), new AuthenticationRequest { Email = signUpRequest.Email, Password = signUpRequest.Password });
-            var userResponse = await _userService.AuthenticateAsync(signUpRequest.Email, signUpRequest.Password);
+            var userResponse = await _userService.SignInAsync(signUpRequest.Email, signUpRequest.Password);
             return new SignInResponse { Success = true, Message = "Usuário cadastrado!", User = userResponse };
         }
 
@@ -97,7 +96,7 @@ namespace SACA.Controllers
             if (user is null) return BadRequest("Usuário inválido");
 
             await _imageService.RemoveFolderFromCloudinaryAsync(user.Id);
-            await _userService.RemoveAsync(user);
+            await _userManager.DeleteAsync(user);
 
             await _context.SaveChangesAsync();
 

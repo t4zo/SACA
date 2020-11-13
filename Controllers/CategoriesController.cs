@@ -30,6 +30,7 @@ namespace SACA.Controllers
             {
                 return await _context.Categories
                     .Include(x => x.Images)
+                    .AsNoTracking()
                     .Where(x => x.Images.Any(x => x.CategoryId != 1))
                     .ToListAsync();
             }
@@ -38,12 +39,14 @@ namespace SACA.Controllers
 
             var categories = await _context.Categories
                .Include(x => x.Images)
-               .Include(x => x.ApplicationUsers.Any(au => au.Id == userId))
+               .Include(x => x.ApplicationUsers)
+               .Where(x => x.ApplicationUsers.Any(au => au.Id == userId))
+               .AsNoTracking()
                .ToListAsync();
 
             foreach (var category in categories)
             {
-                IList<Image> images = new List<Image>();
+                var images = new List<Image>();
 
                 foreach (var image in category.Images)
                 {
@@ -70,6 +73,7 @@ namespace SACA.Controllers
             var category = await _context.Categories
                .Include(x => x.Images)
                .Include(x => x.ApplicationUsers)
+               .AsNoTracking()
                .Where(X => X.Id == id && X.ApplicationUsers.Any(au => au.Id == userId))
                .FirstOrDefaultAsync();
 

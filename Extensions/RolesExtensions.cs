@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using SACA.Options;
 using SACA.Models.Identity;
+using SACA.Options;
 using System;
 using System.Threading.Tasks;
 

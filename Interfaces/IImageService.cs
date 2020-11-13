@@ -1,7 +1,6 @@
 ﻿using ImageMagick;
 using SACA.Models;
 using SACA.Models.Requests;
-using SACA.Models.Identity;
 using System.Threading.Tasks;
 
 namespace SACA.Interfaces
@@ -10,7 +9,7 @@ namespace SACA.Interfaces
     {
         Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(ImageRequest model, int? userId);
         Task RemoveFolderFromCloudinaryAsync(int userId);
-        Task<bool> RemoveImageFromCloudinaryAsync(Image model, ApplicationUser user);
+        Task<bool> RemoveImageFromCloudinaryAsync(Image model);
         MagickImage Resize(MagickImage image, int width, int height);
     }
 }

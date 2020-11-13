@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using SACA.Interfaces;
 using SACA.Models;
 using SACA.Models.Requests;
-using SACA.Models.Identity;
 using SACA.Options;
 using System;
 using System.Linq;
@@ -26,11 +25,11 @@ namespace SACA.Services
             _cloudinary = new Cloudinary(cloudinaryOptions.Value.ApiEnvironmentVariable);
         }
 
-        public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(ImageRequest model, int? userId)
+        public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(ImageRequest imageRequest, int? userId)
         {
             var uploadParams = new ImageUploadParams
             {
-                File = new FileDescription($@"data:image/png;base64,{model.Base64}"),
+                File = new FileDescription($@"data:image/png;base64,{imageRequest.Base64}"),
                 PublicId = userId.HasValue ? $"{_cloudinaryEnvironmentFolder}/users/{userId}/{Guid.NewGuid()}" : $"{_cloudinaryEnvironmentFolder}/_defaults/{Guid.NewGuid()}",
                 Async = true.ToString(),
                 Overwrite = true
@@ -41,7 +40,7 @@ namespace SACA.Services
             return (result.FullyQualifiedPublicId, result.PublicId);
         }
 
-        public async Task<bool> RemoveImageFromCloudinaryAsync(Image model, ApplicationUser user)
+        public async Task<bool> RemoveImageFromCloudinaryAsync(Image model)
         {
             var result = await _cloudinary.DeleteResourcesAsync(model.Url);
 

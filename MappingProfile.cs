@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using SACA.Models;
-using SACA.Models.Requests;
 using SACA.Models.Identity;
+using SACA.Models.Requests;
 using SACA.Models.Responses;
 
 namespace SACA

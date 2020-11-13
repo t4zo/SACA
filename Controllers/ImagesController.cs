@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using SACA.Data;
 using SACA.Interfaces;
 using SACA.Models;
-using SACA.Models.Requests;
 using SACA.Models.Identity;
+using SACA.Models.Requests;
 using SACA.Models.Responses;
 using System;
 using System.Linq;
@@ -36,8 +36,8 @@ namespace SACA.Controllers
             var userId = int.Parse(_userManager.GetUserId(User));
 
             var image = await _context.Images
-                .AsNoTracking()
                 .Include(x => x.User)
+                .AsNoTracking()
                 .Where(x => x.Id == id && x.UserId == userId)
                 .FirstOrDefaultAsync();
 
@@ -85,7 +85,7 @@ namespace SACA.Controllers
 
             var user = await _userManager.GetUserAsync(User);
 
-            await _imageService.RemoveImageFromCloudinaryAsync(originalImage, user);
+            await _imageService.RemoveImageFromCloudinaryAsync(originalImage);
 
             using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
             magickImage.Resize(110, 150);
@@ -96,7 +96,6 @@ namespace SACA.Controllers
             image.Name = imageRequest.Name;
 
             (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageRequest, user.Id);
-
 
             _context.Entry(image).State = EntityState.Modified;
             await _context.SaveChangesAsync();
@@ -113,9 +112,7 @@ namespace SACA.Controllers
                 return BadRequest("Imagem inválida");
             }
 
-            var user = await _userManager.GetUserAsync(User);
-
-            await _imageService.RemoveImageFromCloudinaryAsync(image, user);
+            await _imageService.RemoveImageFromCloudinaryAsync(image);
 
             _context.Remove(image);
             await _context.SaveChangesAsync();
