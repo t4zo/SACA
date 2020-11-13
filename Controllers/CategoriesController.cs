@@ -46,6 +46,8 @@ namespace SACA.Controllers
 
             foreach (var category in categories)
             {
+                category.ApplicationUsers = null;
+
                 var images = new List<Image>();
 
                 foreach (var image in category.Images)

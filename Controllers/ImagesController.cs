@@ -49,8 +49,8 @@ namespace SACA.Controllers
         {
             var image = _mapper.Map<Image>(imageRequest);
 
-            var user = await _userManager.FindByNameAsync(User.Identity.Name);
-            image.UserId = user.Id;
+            image.UserId = int.Parse(_userManager.GetUserId(User));
+            var user = await _context.Users.Include(x => x.Categories).FirstOrDefaultAsync(x => x.Id == image.UserId);
 
             using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
             magickImage.Resize(110, 150);

@@ -33,8 +33,7 @@ namespace SACA.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("authenticate")]
-        public async Task<ActionResult<SignInResponse>> Authenticate(SignInRequest authenticationRequest)
+        public async Task<ActionResult<SignInResponse>> SignIn(SignInRequest authenticationRequest)
         {
             var userResponse = await _userService.SignInAsync(authenticationRequest.Email, authenticationRequest.Password, authenticationRequest.Remember);
 
