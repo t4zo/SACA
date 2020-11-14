@@ -29,9 +29,8 @@ namespace SACA.Controllers
             if (!User.Identity.IsAuthenticated)
             {
                 return await _context.Categories
-                    .Include(x => x.Images)
+                    .Include(x => x.Images.Where(x => x.CategoryId != 1))
                     .AsNoTracking()
-                    .Where(x => x.Images.Any(x => x.CategoryId != 1))
                     .ToListAsync();
             }
 
@@ -39,8 +38,7 @@ namespace SACA.Controllers
 
             var categories = await _context.Categories
                .Include(x => x.Images)
-               .Include(x => x.ApplicationUsers)
-               .Where(x => x.ApplicationUsers.Any(au => au.Id == userId))
+               .Include(x => x.ApplicationUsers.Where(au => au.Id == userId))
                .AsNoTracking()
                .ToListAsync();
 
@@ -74,9 +72,9 @@ namespace SACA.Controllers
 
             var category = await _context.Categories
                .Include(x => x.Images)
-               .Include(x => x.ApplicationUsers)
+               .Include(x => x.ApplicationUsers.Where(au => au.Id == userId))
                .AsNoTracking()
-               .Where(X => X.Id == id && X.ApplicationUsers.Any(au => au.Id == userId))
+               .Where(x => x.Id == id)
                .FirstOrDefaultAsync();
 
             category.ApplicationUsers = null;

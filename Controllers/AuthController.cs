@@ -49,9 +49,8 @@ namespace SACA.Controllers
             var user = await _userManager.FindByIdAsync(userCreated.Id.ToString());
 
             user.Categories = await _context.Categories
-                .Include(x => x.Images)
+                .Include(x => x.Images.Where(i => i.CategoryId != 1))
                 .AsNoTracking()
-                .Where(x => x.Images.Any(x => x.CategoryId != 1))
                 .ToListAsync();
 
             await _context.SaveChangesAsync();
@@ -93,7 +92,10 @@ namespace SACA.Controllers
         public async Task<ActionResult<ApplicationUser>> Remove(string id)
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
-            if (user is null) return BadRequest("Usuário inválido");
+            if (user is null)
+            {
+                return BadRequest("Usuário inválido");
+            }
 
             await _imageService.RemoveFolderFromCloudinaryAsync(user.Id);
             await _userManager.DeleteAsync(user);

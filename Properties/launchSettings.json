@@ -15,12 +15,22 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "SACA": {
+    "Kestrel": {
       "commandName": "Project",
+      "applicationUrl": "http://localhost:5501",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "http://localhost:5501"
+      }
+    },
+    "Watch": {
+      "commandName": "Executable",
+      "workingDirectory": "$(ProjectDir)",
+      "executablePath": "dotnet.exe",
+      "commandLineArgs": "watch run",
+      "applicationUrl": "http://localhost:5501",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     }
   }
 }
