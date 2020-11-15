@@ -78,6 +78,8 @@ namespace SACA
             services.AddSwagger();
 
             services.AddRouting(options => options.LowercaseUrls = true);
+
+            services.AddDatabaseDeveloperPageExceptionFilter();
          
             services.AddControllers().AddFluentValidation(configureExpression => configureExpression.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
         }
@@ -87,6 +89,7 @@ namespace SACA
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseMigrationsEndPoint();
             }
 
             app.UseProblemDetails();
