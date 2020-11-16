@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ImageMagick;
+using LanguageExt;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -30,8 +31,22 @@ namespace SACA.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<ImageResponse>> Get()
+        {
+            var userId = int.Parse(_userManager.GetUserId(User));
+
+            var image = await _context.Images
+                .Include(x => x.User)
+                .AsNoTracking()
+                .Where(x => x.UserId == userId)
+                .FirstOrDefaultAsync();
+
+            return OptionUnsafe<Image>.Some(image).MatchUnsafe<ActionResult<ImageResponse>>(image => Ok(_mapper.Map<ImageResponse>(image)), () => NotFound());
+        }
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<ImageResponse>> Get(int id)
+        public async Task<ImageResponse> Get(int id)
         {
             var userId = int.Parse(_userManager.GetUserId(User));
 
@@ -45,7 +60,7 @@ namespace SACA.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ImageResponse>> Create(ImageRequest imageRequest)
+        public async Task<ImageResponse> Create(ImageRequest imageRequest)
         {
             var image = _mapper.Map<Image>(imageRequest);
 
@@ -104,12 +119,12 @@ namespace SACA.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ImageResponse>> Remove(int id)
+        public async Task<ImageResponse> Remove(int id)
         {
             var image = await _context.Images.FirstOrDefaultAsync(c => c.Id == id);
             if (image is null)
             {
-                return BadRequest("Imagem inválida");
+                return null;
             }
 
             await _imageService.RemoveImageFromCloudinaryAsync(image);
@@ -121,7 +136,7 @@ namespace SACA.Controllers
         }
 
         [HttpPost("superuser")]
-        public async Task<ActionResult> CreateAdmin(ImageRequest imageRequest)
+        public async Task<ImageResponse> CreateAdmin(ImageRequest imageRequest)
         {
             var image = _mapper.Map<Image>(imageRequest);
 
@@ -133,16 +148,16 @@ namespace SACA.Controllers
             await _context.Images.AddAsync(image);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return _mapper.Map<ImageResponse>(image);
         }
 
         [HttpDelete("superuser/{id}")]
-        public async Task<ActionResult<ImageResponse>> RemoveAdmin(int id)
+        public async Task<ImageResponse> RemoveAdmin(int id)
         {
             var image = await _context.Images.FirstOrDefaultAsync(c => c.Id == id);
             if (image is null)
             {
-                return BadRequest("Imagem inválida");
+                return null;
             }
 
             await _imageService.RemoveImageFromCloudinaryAsync(image);
