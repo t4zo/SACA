@@ -34,19 +34,31 @@ namespace SACA.Controllers
 
         [AllowAnonymous]
         [HttpPost("signIn")]
-        public async Task<ActionResult<SignInResponse>> SignIn(SignInRequest authenticationRequest)
+        public async Task<ActionResult> SignIn(SignInRequest authenticationRequest)
         {
-            var userResponse = await _userService.SignInAsync(authenticationRequest.Email, authenticationRequest.Password, authenticationRequest.Remember);
+            var userOneOf = await _userService.SignInAsync(authenticationRequest.Email, authenticationRequest.Password, authenticationRequest.Remember);
 
-            return new SignInResponse { Success = true, Message = "Usuário logado!", User = userResponse };
+            return userOneOf.Match<ActionResult>(
+                user => Ok(new SignInResponse { Success = true, Message = "Usuário logado!", User = user }),
+                argumentException => BadRequest(new ProblemDetails { Title = "Bad Request", Type = "https://httpstatuses.com/400", Detail = argumentException.Message })
+                );
         }
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult<SignInResponse>> Create(SignUpRequest signUpRequest)
+        public async Task<ActionResult> Create(SignUpRequest signUpRequest)
         {
-            var userCreated = await _userService.CreateAsync(signUpRequest);
-            var user = await _userManager.FindByIdAsync(userCreated.Id.ToString());
+            UserResponse userResponse;
+            try
+            {
+                userResponse = await _userService.CreateAsync(signUpRequest);
+            }
+            catch
+            {
+                return BadRequest(new ProblemDetails { Title = "Bad Request", Type = "https://httpstatuses.com/400", Detail = "Erro ao criar usuário, email e/ou senha inválido(s)" });
+            }
+
+            var user = await _userManager.FindByIdAsync(userResponse.Id.ToString());
 
             user.Categories = await _context.Categories
                 .Include(x => x.Images.Where(i => i.CategoryId != 1))
@@ -55,8 +67,12 @@ namespace SACA.Controllers
 
             await _context.SaveChangesAsync();
 
-            var userResponse = await _userService.SignInAsync(signUpRequest.Email, signUpRequest.Password);
-            return new SignInResponse { Success = true, Message = "Usuário cadastrado!", User = userResponse };
+            var userOneOf = await _userService.SignInAsync(signUpRequest.Email, signUpRequest.Password);
+
+            return userOneOf.Match<ActionResult>(
+                user => Ok(new SignInResponse { Success = true, Message = "Usuário logado!", User = user }),
+                argumentException => BadRequest(new ProblemDetails { Title = "Bad Request", Type = "https://httpstatuses.com/400", Detail = argumentException.Message })
+                );
         }
 
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]

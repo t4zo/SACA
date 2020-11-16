@@ -83,8 +83,13 @@ namespace SACA
             services.AddRouting(options => options.LowercaseUrls = true);
 
             services.AddDatabaseDeveloperPageExceptionFilter();
-         
-            services.AddControllers().AddFluentValidation(configureExpression => configureExpression.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
+
+            services.AddControllers().AddFluentValidation(configureExpression =>
+            {
+                configureExpression.LocalizationEnabled = true;
+                //configureExpression.ValidatorOptions.
+                configureExpression.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)

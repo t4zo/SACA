@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using OneOf;
 using SACA.Constants;
 using SACA.Extensions;
 using SACA.Interfaces;
@@ -62,13 +63,13 @@ namespace SACA.Services
             return _mapper.Map<UserResponse>(user);
         }
 
-        public async Task<UserResponse> SignInAsync(string username, string password, bool remember)
+        public async Task<OneOf<UserResponse, ArgumentException>> SignInAsync(string username, string password, bool remember)
         {
             var result = await _signInManager.PasswordSignInAsync(username, password, isPersistent: remember, lockoutOnFailure: false);
 
             if(!result.Succeeded)
             {
-                throw new ArgumentException("Usuário e/ou senha inválido(s)");
+                return new ArgumentException("Usuário e/ou senha inválido(s)");
             }
 
             var user = await _userManager.FindByNameAsync(username);

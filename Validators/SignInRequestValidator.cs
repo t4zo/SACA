@@ -3,9 +3,9 @@ using SACA.Models.Requests;
 
 namespace SACA.Validators
 {
-    public class AuthenticationRequestValidator : AbstractValidator<SignInRequest>
+    public class SignInRequestValidator : AbstractValidator<SignInRequest>
     {
-        public AuthenticationRequestValidator()
+        public SignInRequestValidator()
         {
             RuleFor(x => x.Email).NotNull().NotEmpty().WithMessage("Email não informado")
                 .EmailAddress().WithMessage("Endereço de email inválido");
