@@ -49,7 +49,10 @@ namespace SACA
 
             services.AddJwtSecurity();
 
-            services.AddProblemDetails();
+            services.AddProblemDetails(configure =>
+            {
+                configure.IncludeExceptionDetails = (ctx, exp) => true;
+            });
 
             services.AddIdentityCore<ApplicationUser>(options =>
             {
