@@ -1,10 +1,9 @@
 ﻿namespace SACA.Models.Responses
 {
-    public class ImageResponse
+    public class ImageResponse : BaseEntity
     {
-        public int Id { get; set; }
         public int CategoryId { get; set; }
-        public int? UserId { get; set; }
+        public int UserId { get; set; }
         public string Name { get; set; }
         public string Url { get; set; }
         public string FullyQualifiedPublicUrl { get; set; }

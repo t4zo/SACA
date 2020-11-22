@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using SACA.Constants;
-using System;
 
 namespace SACA.Extensions
 {
@@ -23,7 +23,7 @@ namespace SACA.Extensions
                     configurePolicy
                         .WithOrigins(allowedOrigins)
                         .WithHeaders(HeaderNames.Authorization)
-                        .WithMethods(new string[] { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete });
+                        .WithMethods(HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete);
                 });
             });
 

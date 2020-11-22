@@ -1,33 +1,32 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using SACA.Models.Identity;
-using System.Linq;
-using System.Threading.Tasks;
 using static SACA.Constants.AuthorizationConstants;
 
 namespace SACA.Authorization
 {
     public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public PermissionAuthorizationHandler(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
+        public PermissionAuthorizationHandler(UserManager<ApplicationUser> userManager,
+            RoleManager<ApplicationRole> roleManager)
         {
             _userManager = userManager;
             _roleManager = roleManager;
         }
 
         // Modificar completamente para validar pelo Token
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context,
+            PermissionRequirement requirement)
         {
             var user = await _userManager.GetUserAsync(context.User);
 
             // Se não estiver logado retorna não autorizado
-            if (user is null)
-            {
-                return;
-            }
+            if (user is null) return;
 
             // Autoriza se for Superusuário
             if (await _userManager.IsInRoleAsync(user, Roles.Superuser))
@@ -38,10 +37,10 @@ namespace SACA.Authorization
 
             var userClaims = await _userManager.GetClaimsAsync(user);
             var userPermissions = userClaims.Where(x =>
-                    x.Type == CustomClaimTypes.Permissions &&
-                    x.Value == requirement.Permission &&
-                    x.Issuer == "LOCAL AUTHORITY"
-                ).Select(x => x.Value);
+                x.Type == CustomClaimTypes.Permissions &&
+                x.Value == requirement.Permission &&
+                x.Issuer == "LOCAL AUTHORITY"
+            ).Select(x => x.Value);
 
             // Autoriza se o usuário possuir a permissão requerida
             if (userPermissions.Any())

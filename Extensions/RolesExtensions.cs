@@ -1,32 +1,30 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SACA.Models.Identity;
 using SACA.Options;
-using System;
-using System.Threading.Tasks;
 
 namespace SACA.Extensions
 {
     public static class RolesExtensions
     {
-        public static async Task<IApplicationBuilder> CreateRoles(this IApplicationBuilder app, IServiceProvider serviceProvider)
+        public static async Task<IApplicationBuilder> CreateRoles(this IApplicationBuilder app,
+            IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-            var appConfiguration = serviceProvider.GetRequiredService<IOptionsSnapshot<AppOptions>>().Value;
+            var appOptions = serviceProvider.GetRequiredService<IOptionsSnapshot<AppOptions>>().Value;
 
-            if (!roleManager.Roles.AnyAsync().Result)
-            {
-                foreach (var role in appConfiguration.Roles)
-                {
-                    if (!await roleManager.RoleExistsAsync(role))
-                    {
-                        await roleManager.CreateAsync(new ApplicationRole { Name = role, NormalizedName = role.ToUpper() });
-                    }
-                }
-            }
+            var hasRoles = await roleManager.Roles.AnyAsync();
+            if (hasRoles) return app;
+
+            foreach (var role in appOptions.Roles)
+                if (!await roleManager.RoleExistsAsync(role))
+                    await roleManager.CreateAsync(
+                        new ApplicationRole {Name = role, NormalizedName = role.ToUpper()});
 
             return app;
         }

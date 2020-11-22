@@ -1,15 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
 using static SACA.Constants.AuthorizationConstants;
 
 namespace SACA.Authorization
 {
     public class PermissionPolicyProvider : IAuthorizationPolicyProvider
     {
-        private DefaultAuthorizationPolicyProvider _fallbackPolicyProvider { get; }
-
         public PermissionPolicyProvider(IOptions<AuthorizationOptions> options)
         {
             // Só pode haver um provedor de políticas no ASP.NET Core.
@@ -17,7 +15,12 @@ namespace SACA.Authorization
             _fallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
         }
 
-        public Task<AuthorizationPolicy> GetDefaultPolicyAsync() => _fallbackPolicyProvider.GetDefaultPolicyAsync();
+        private DefaultAuthorizationPolicyProvider _fallbackPolicyProvider { get; }
+
+        public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
+        {
+            return _fallbackPolicyProvider.GetDefaultPolicyAsync();
+        }
 
 
         // Cria dinamicamente uma política com um requisito que contém a permissão.
@@ -35,6 +38,9 @@ namespace SACA.Authorization
             return _fallbackPolicyProvider.GetPolicyAsync(policyName);
         }
 
-        public Task<AuthorizationPolicy> GetFallbackPolicyAsync() => _fallbackPolicyProvider.GetFallbackPolicyAsync();
+        public Task<AuthorizationPolicy> GetFallbackPolicyAsync()
+        {
+            return _fallbackPolicyProvider.GetFallbackPolicyAsync();
+        }
     }
 }

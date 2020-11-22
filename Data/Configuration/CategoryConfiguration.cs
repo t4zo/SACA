@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SACA.Constants;
 using SACA.Models;
 
-namespace SACA.Data.Mappings
+namespace SACA.Data.Configuration
 {
     public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
@@ -11,7 +11,7 @@ namespace SACA.Data.Mappings
         {
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Id).HasIdentityOptions(startValue: DatabaseConstants.StartValueId);
+            builder.Property(x => x.Id).HasIdentityOptions(DatabaseConstants.StartValueId);
         }
     }
 }

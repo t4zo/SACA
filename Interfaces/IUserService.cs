@@ -1,8 +1,8 @@
-﻿using OneOf;
+﻿using System;
+using System.Threading.Tasks;
+using OneOf;
 using SACA.Models.Requests;
 using SACA.Models.Responses;
-using System;
-using System.Threading.Tasks;
 
 namespace SACA.Interfaces
 {

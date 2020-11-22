@@ -2,7 +2,6 @@
 {
     public static class AuthorizationConstants
     {
-
         public const string AllowedOrigins = "AllowedOrigins";
 
         public const string Remember = "rmb";

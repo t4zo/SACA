@@ -1,24 +1,26 @@
-﻿using SACA.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using SACA.Models;
 
 namespace SACA.Data.Seed
 {
     public class EntitySeed<TEntity> : IEntitySeed where TEntity : BaseEntity
     {
         protected readonly ApplicationDbContext _context;
-        protected string RessourceName { get; set; }
 
         protected EntitySeed(ApplicationDbContext context, string ressourceName)
         {
             _context = context;
             RessourceName = ressourceName;
         }
+
+        protected string RessourceName { get; set; }
 
         public virtual async Task LoadAsync()
         {
@@ -28,16 +30,16 @@ namespace SACA.Data.Seed
             {
                 var assembly = Assembly.GetExecutingAssembly();
 
-                using var stream = assembly.GetManifestResourceStream(RessourceName);
-                using var reader = new StreamReader(stream, Encoding.UTF8);
+                await using var stream = assembly.GetManifestResourceStream(RessourceName);
+                using var reader =
+                    new StreamReader(stream ?? throw new ExternalException(nameof(TEntity)), Encoding.UTF8);
 
-                string json = await reader.ReadToEndAsync();
-                List<TEntity> entities = JsonSerializer.Deserialize<List<TEntity>>(json);
+                var json = await reader.ReadToEndAsync();
+                var entities = JsonSerializer.Deserialize<List<TEntity>>(json);
 
-                foreach (var entity in entities)
-                {
-                    await dbSet.AddAsync(entity);
-                }
+                if (entities is not null)
+                    foreach (var entity in entities)
+                        await dbSet.AddAsync(entity);
 
                 await _context.SaveChangesAsync();
             }

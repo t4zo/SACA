@@ -9,6 +9,5 @@ namespace SACA.Models
 
     public abstract class BaseEntity : BaseEntity<int>
     {
-
     }
 }

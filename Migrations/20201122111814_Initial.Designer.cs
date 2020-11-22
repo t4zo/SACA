@@ -10,7 +10,7 @@ using SACA.Data;
 namespace SACA.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20201110220041_Initial")]
+    [Migration("20201122111814_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

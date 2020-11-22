@@ -1,14 +1,14 @@
-﻿using AutoMapper;
-using Newtonsoft.Json;
-using SACA.Interfaces;
-using SACA.Models;
-using SACA.Models.Requests;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using Newtonsoft.Json;
+using SACA.Interfaces;
+using SACA.Models;
+using SACA.Models.Requests;
 
 namespace SACA.Data.Seed.Models
 {
@@ -17,7 +17,8 @@ namespace SACA.Data.Seed.Models
         private readonly IImageService _imageService;
         private readonly IMapper _mapper;
 
-        public ImagesSeed(ApplicationDbContext context, IImageService imageService, IMapper mapper) : base(context, "SACA.Data.Seed.Json.01Images.json")
+        public ImagesSeed(ApplicationDbContext context, IImageService imageService, IMapper mapper) : base(context,
+            "SACA.Data.Seed.Json.01Images.json")
         {
             _imageService = imageService;
             _mapper = mapper;
@@ -31,18 +32,19 @@ namespace SACA.Data.Seed.Models
             {
                 var assembly = Assembly.GetExecutingAssembly();
 
-                using var stream = assembly.GetManifestResourceStream(RessourceName);
+                await using var stream = assembly.GetManifestResourceStream(RessourceName);
                 using var reader = new StreamReader(stream, Encoding.UTF8);
 
-                string json = await reader.ReadToEndAsync();
-                List<Image> images = JsonConvert.DeserializeObject<List<Image>>(json);
+                var json = await reader.ReadToEndAsync();
+                var images = JsonConvert.DeserializeObject<List<Image>>(json);
 
                 foreach (var image in images)
                 {
                     var imageDto = _mapper.Map<ImageRequest>(image);
                     imageDto.Base64 = image.Url;
 
-                    (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageDto, userId: null);
+                    (image.FullyQualifiedPublicUrl, image.Url) =
+                        await _imageService.UploadToCloudinaryAsync(imageDto);
 
                     await dbSet.AddAsync(image);
                 }

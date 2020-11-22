@@ -1,4 +1,7 @@
-﻿using CloudinaryDotNet;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using ImageMagick;
 using Microsoft.AspNetCore.Hosting;
@@ -8,9 +11,6 @@ using SACA.Interfaces;
 using SACA.Models;
 using SACA.Models.Requests;
 using SACA.Options;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SACA.Services
 {
@@ -25,12 +25,29 @@ namespace SACA.Services
             _cloudinary = new Cloudinary(cloudinaryOptions.Value.ApiEnvironmentVariable);
         }
 
-        public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(ImageRequest imageRequest, int? userId)
+        public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(
+            ImageRequest imageRequest)
         {
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription($@"data:image/png;base64,{imageRequest.Base64}"),
-                PublicId = userId.HasValue ? $"{_cloudinaryEnvironmentFolder}/users/{userId}/{Guid.NewGuid()}" : $"{_cloudinaryEnvironmentFolder}/_defaults/{Guid.NewGuid()}",
+                PublicId = $"{_cloudinaryEnvironmentFolder}/_defaults/{Guid.NewGuid()}",
+                Async = true.ToString(),
+                Overwrite = true
+            };
+
+            var result = await _cloudinary.UploadAsync(uploadParams);
+
+            return (result.FullyQualifiedPublicId, result.PublicId);
+        }
+
+        public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(
+            ImageRequest imageRequest, int userId)
+        {
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription($@"data:image/png;base64,{imageRequest.Base64}"),
+                PublicId = $"{_cloudinaryEnvironmentFolder}/users/{userId}/{Guid.NewGuid()}",
                 Async = true.ToString(),
                 Overwrite = true
             };
@@ -59,7 +76,7 @@ namespace SACA.Services
 
         public MagickImage Resize(MagickImage image, int width, int height)
         {
-            MagickGeometry size = new MagickGeometry(width, height)
+            var size = new MagickGeometry(width, height)
             {
                 IgnoreAspectRatio = true
             };

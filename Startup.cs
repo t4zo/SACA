@@ -1,3 +1,5 @@
+using System;
+using System.Reflection;
 using AutoMapper;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
@@ -17,19 +19,17 @@ using SACA.Interfaces;
 using SACA.Models.Identity;
 using SACA.Options;
 using SACA.Services;
-using System;
-using System.Reflection;
 
 namespace SACA
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
+
+        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -49,27 +49,25 @@ namespace SACA
 
             services.AddJwtSecurity();
 
-            services.AddProblemDetails(configure =>
-            {
-                configure.IncludeExceptionDetails = (ctx, exp) => true;
-            });
+            services.AddProblemDetails(configure => { configure.IncludeExceptionDetails = (ctx, exp) => true; });
 
             services.AddIdentityCore<ApplicationUser>(options =>
-            {
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequiredLength = 6;
-                options.Password.RequiredUniqueChars = 1;
+                {
+                    options.Password.RequireDigit = true;
+                    options.Password.RequireLowercase = true;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequiredLength = 6;
+                    options.Password.RequiredUniqueChars = 1;
 
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-                options.Lockout.MaxFailedAccessAttempts = 10;
-                options.Lockout.AllowedForNewUsers = false;
+                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                    options.Lockout.MaxFailedAccessAttempts = 10;
+                    options.Lockout.AllowedForNewUsers = false;
 
-                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-                options.User.RequireUniqueEmail = true;
-            })
+                    options.User.AllowedUserNameCharacters =
+                        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                    options.User.RequireUniqueEmail = true;
+                })
                 .AddSignInManager()
                 .AddRoles<ApplicationRole>()
                 .AddErrorDescriber<PortugueseIdentityErrorDescriber>()
@@ -121,10 +119,7 @@ namespace SACA
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers().RequireAuthorization();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers().RequireAuthorization(); });
         }
     }
 }
