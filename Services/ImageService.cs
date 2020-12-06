@@ -25,8 +25,7 @@ namespace SACA.Services
             _cloudinary = new Cloudinary(cloudinaryOptions.Value.ApiEnvironmentVariable);
         }
 
-        public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(
-            ImageRequest imageRequest)
+        public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(ImageRequest imageRequest)
         {
             var uploadParams = new ImageUploadParams
             {
@@ -41,8 +40,7 @@ namespace SACA.Services
             return (result.FullyQualifiedPublicId, result.PublicId);
         }
 
-        public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(
-            ImageRequest imageRequest, int userId)
+        public async Task<(string FullyQualifiedPublicId, string PublicId)> UploadToCloudinaryAsync(ImageRequest imageRequest, int userId)
         {
             var uploadParams = new ImageUploadParams
             {

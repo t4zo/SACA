@@ -31,15 +31,18 @@ namespace SACA.Data.Seed
                 var assembly = Assembly.GetExecutingAssembly();
 
                 await using var stream = assembly.GetManifestResourceStream(RessourceName);
-                using var reader =
-                    new StreamReader(stream ?? throw new ExternalException(nameof(TEntity)), Encoding.UTF8);
+                using var reader = new StreamReader(stream ?? throw new ExternalException(nameof(TEntity)), Encoding.UTF8);
 
                 var json = await reader.ReadToEndAsync();
                 var entities = JsonSerializer.Deserialize<List<TEntity>>(json);
 
                 if (entities is not null)
+                {
                     foreach (var entity in entities)
+                    {
                         await dbSet.AddAsync(entity);
+                    }
+                }
 
                 await _context.SaveChangesAsync();
             }

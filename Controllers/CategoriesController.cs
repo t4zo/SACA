@@ -3,12 +3,10 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SACA.Data;
 using SACA.Models;
-using SACA.Models.Identity;
 
 namespace SACA.Controllers
 {
@@ -16,7 +14,7 @@ namespace SACA.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        public CategoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public CategoriesController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -25,41 +23,39 @@ namespace SACA.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetAll()
         {
-            if (User.Identity != null && !User.Identity.IsAuthenticated)
-                return await _context.Categories
-                    .Include(
-                        x => x.Images.Where(x => x.CategoryId.ToString() != "EE0230EE-BFE5-4B4C-86F6-A5C54D0E2BE7"))
+            if (User.Identity!.IsAuthenticated)
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+                var categories = await _context.Categories
                     .AsNoTracking()
+                    .Include(x => x.Images)
+                    .Include(x => x.ApplicationUsers.Where(y => y.Id == userId))
+                    .Select(c => new Category
+                    {
+                        Id = c.Id,
+                        Name = c.Name,
+                        IconName = c.IconName,
+                        Images = c.Images.Select(i => new Image
+                        {
+                            Id = i.Id,
+                            Name = i.Name,
+                            CategoryId = i.CategoryId,
+                            UserId = i.UserId,
+                            Url = i.Url,
+                            FullyQualifiedPublicUrl = i.FullyQualifiedPublicUrl
+                        }).ToList()
+                    })
                     .ToListAsync();
 
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            var categories = await _context.Categories
-                .Include(x => x.Images)
-                .Include(x => x.ApplicationUsers.Where(au => au.Id == userId))
-                .AsNoTracking()
-                .ToListAsync();
-
-            foreach (var category in categories)
-            {
-                category.ApplicationUsers = null;
-
-                var images = new List<Image>();
-
-                foreach (var image in category.Images)
-                {
-                    if (string.IsNullOrEmpty(image.UserId.ToString()) && image.UserId != userId) continue;
-
-                    image.User = null;
-                    image.Category = null;
-                    images.Add(image);
-                }
-
-                category.Images = images;
+                return categories;
             }
 
-
-            return categories;
+            return await _context.Categories
+                .AsNoTracking()
+                .Include(x => x.Images)
+                .Where(x => x.Id != 1)
+                .ToListAsync();
         }
 
         [HttpGet("{id}")]
@@ -68,26 +64,26 @@ namespace SACA.Controllers
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             var category = await _context.Categories
-                .Include(x => x.Images)
-                .Include(x => x.ApplicationUsers.Where(au => au.Id == userId))
                 .AsNoTracking()
+                .Include(x => x.Images)
+                .Include(x => x.ApplicationUsers.Where(y => y.Id == userId))
                 .Where(x => x.Id == id)
+                .Select(c => new Category
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    IconName = c.IconName,
+                    Images = c.Images.Select(i => new Image
+                    {
+                        Id = i.Id,
+                        Name = i.Name,
+                        CategoryId = i.CategoryId,
+                        UserId = i.UserId,
+                        Url = i.Url,
+                        FullyQualifiedPublicUrl = i.FullyQualifiedPublicUrl
+                    }).ToList()
+                })
                 .FirstOrDefaultAsync();
-
-            category.ApplicationUsers = null;
-
-            var images = new List<Image>();
-
-            foreach (var image in category.Images)
-            {
-                if (string.IsNullOrEmpty(image.UserId.ToString()) && image.UserId != userId) continue;
-
-                image.User = null;
-                image.Category = null;
-                images.Add(image);
-            }
-
-            category.Images = images;
 
             return category;
         }

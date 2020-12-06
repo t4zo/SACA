@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -21,12 +22,7 @@ namespace SACA.Services
         private readonly ITokenService _tokenService;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserService(
-            ITokenService tokenService,
-            UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
-            IMapper mapper
-        )
+        public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ITokenService tokenService, IMapper mapper)
         {
             _tokenService = tokenService;
             _userManager = userManager;
@@ -34,7 +30,7 @@ namespace SACA.Services
             _mapper = mapper;
         }
 
-        public async Task<UserResponse> CreateAsync(SignUpRequest signUpRequest)
+        public async Task<UserResponse> SignInAsync(SignUpRequest signUpRequest)
         {
             var user = new ApplicationUser
             {
@@ -43,24 +39,32 @@ namespace SACA.Services
             };
 
             var result = await _userManager.CreateAsync(user, signUpRequest.Password);
+            if (!result.Succeeded)
+            {
+                throw new ArgumentException(result.Errors.First().Description);
+            }
 
-            if (!result.Succeeded) throw new ArgumentException(result.Errors.First().Description);
-
+            var roles = typeof(Roles).GetAllPublicConstantValues<string>();
             foreach (var role in signUpRequest.Roles)
-                if (typeof(Roles).GetAllPublicConstantValues<string>().Contains(role))
+            {
+                if (roles.Contains(role))
+                {
                     await _userManager.AddToRoleAsync(user, role);
+                }
+            }
 
             await _userManager.AddToRoleAsync(user, Roles.User);
 
             return _mapper.Map<UserResponse>(user);
         }
 
-        public async Task<OneOf<UserResponse, ArgumentException>> SignInAsync(string username, string password,
-            bool remember)
+        public async Task<OneOf<UserResponse, ArgumentException>> LogInAsync(string username, string password, bool remember)
         {
             var result = await _signInManager.PasswordSignInAsync(username, password, remember, false);
-
-            if (!result.Succeeded) return new ArgumentException("Usuário e/ou senha inválido(s)");
+            if (!result.Succeeded)
+            {
+                return new ArgumentException("Usuário e/ou senha inválido(s)");
+            }
 
             var user = await _userManager.FindByNameAsync(username);
             var userClaims = await _userManager.GetClaimsAsync(user);
@@ -78,10 +82,21 @@ namespace SACA.Services
             var token = _tokenService.GenerateJWTToken(claimsIdentity);
 
             var userResponse = _mapper.Map<UserResponse>(user);
+
             userResponse.Roles = roles;
             userResponse.Token = token;
 
             return userResponse;
+        }
+
+        public async Task DeleteAsync(ApplicationUser user)
+        {
+            await _userManager.DeleteAsync(user);
+        }
+
+        public async Task<ICollection<string>> GetRolesAsync(ApplicationUser user)
+        {
+            return await _userManager.GetRolesAsync(user);
         }
     }
 }

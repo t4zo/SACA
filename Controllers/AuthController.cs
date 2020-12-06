@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SACA.Constants;
@@ -21,30 +20,25 @@ namespace SACA.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
         private readonly IMapper _mapper;
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUserService _userService;
 
-        public AuthController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMapper mapper,
-            IUserService userService, IImageService imageService)
+        public AuthController(ApplicationDbContext context, IUserService userService, IImageService imageService, IMapper mapper)
         {
             _context = context;
-            _userManager = userManager;
-            _mapper = mapper;
             _userService = userService;
             _imageService = imageService;
+            _mapper = mapper;
         }
 
         [AllowAnonymous]
         [HttpPost("signIn")]
-        public async Task<ActionResult> SignIn(SignInRequest authenticationRequest)
+        public async Task<ActionResult> SignIn(SignInRequest signInRequest)
         {
-            var userOneOf = await _userService.SignInAsync(authenticationRequest.Email, authenticationRequest.Password,
-                authenticationRequest.Remember);
+            var userOneOf = await _userService.LogInAsync(signInRequest.Email, signInRequest.Password, signInRequest.Remember);
 
             return userOneOf.Match<ActionResult>(
                 user => Ok(new SignInResponse {Success = true, Message = "Usuário logado!", User = user}),
-                argumentException => BadRequest(new ProblemDetails
-                    {Title = "Bad Request", Type = "https://httpstatuses.com/400", Detail = argumentException.Message})
+                argumentException => BadRequest(new ProblemDetails {Title = "Bad Request", Type = "https://httpstatuses.com/400", Detail = argumentException.Message})
             );
         }
 
@@ -55,7 +49,7 @@ namespace SACA.Controllers
             UserResponse userResponse;
             try
             {
-                userResponse = await _userService.CreateAsync(signUpRequest);
+                userResponse = await _userService.SignInAsync(signUpRequest);
             }
             catch
             {
@@ -66,21 +60,20 @@ namespace SACA.Controllers
                 });
             }
 
-            var user = await _userManager.FindByIdAsync(userResponse.Id.ToString());
+            var user = await _context.Users.FindAsync(userResponse.Id);
 
             user.Categories = await _context.Categories
-                .Include(x => x.Images.Where(i => i.CategoryId.ToString() != "EE0230EE-BFE5-4B4C-86F6-A5C54D0E2BE7"))
                 .AsNoTracking()
+                .Include(x => x.Images.Where(i => i.CategoryId.ToString() != "1"))
                 .ToListAsync();
 
             await _context.SaveChangesAsync();
 
-            var userOneOf = await _userService.SignInAsync(signUpRequest.Email, signUpRequest.Password);
+            var userOneOf = await _userService.LogInAsync(signUpRequest.Email, signUpRequest.Password);
 
             return userOneOf.Match<ActionResult>(
-                user => Ok(new SignInResponse {Success = true, Message = "Usuário logado!", User = user}),
-                argumentException => BadRequest(new ProblemDetails
-                    {Title = "Bad Request", Type = "https://httpstatuses.com/400", Detail = argumentException.Message})
+                userResult => Ok(new SignInResponse {Success = true, Message = "Usuário logado!", User = userResult}),
+                argumentException => BadRequest(new ProblemDetails {Title = "Bad Request", Type = "https://httpstatuses.com/400", Detail = argumentException.Message})
             );
         }
 
@@ -88,13 +81,12 @@ namespace SACA.Controllers
         [HttpGet]
         public async Task<ActionResult<List<UserResponse>>> GetAll()
         {
-            var users = await _userManager.Users.ToListAsync();
-            var usersResponses = _mapper.Map<List<UserResponse>>(users);
+            var usersResponses = await _context.Users.ProjectTo<UserResponse>(_mapper.ConfigurationProvider).ToListAsync();
 
             foreach (var userResponse in usersResponses)
             {
-                var user = users.FirstOrDefault(x => x.Id == userResponse.Id);
-                userResponse.Roles = await _userManager.GetRolesAsync(user);
+                var user = _mapper.Map<ApplicationUser>(userResponse);
+                userResponse.Roles = await _userService.GetRolesAsync(user);
             }
 
             return usersResponses;
@@ -102,25 +94,32 @@ namespace SACA.Controllers
 
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserResponse>> Get(Guid id)
+        public async Task<ActionResult<UserResponse>> Get(int id)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await _context.Users.FindAsync(id);
+            if (user is null)
+            {
+                return BadRequest();
+            }
 
             var userResponse = _mapper.Map<UserResponse>(user);
-            userResponse.Roles = await _userManager.GetRolesAsync(user);
+            userResponse.Roles = await _userService.GetRolesAsync(user);
 
             return userResponse;
         }
 
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApplicationUser>> Remove(Guid id)
+        public async Task<ActionResult<ApplicationUser>> Remove(int id)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
-            if (user is null) return BadRequest("Usuário inválido");
+            var user = await _context.Users.FindAsync(id);
+            if (user is null)
+            {
+                return BadRequest();
+            }
 
             await _imageService.RemoveFolderFromCloudinaryAsync(user.Id);
-            await _userManager.DeleteAsync(user);
+            await _userService.DeleteAsync(user);
 
             await _context.SaveChangesAsync();
 

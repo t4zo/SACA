@@ -11,8 +11,7 @@ namespace SACA.Extensions
 {
     public static class SeedExtensions
     {
-        public static async Task<IApplicationBuilder> SeedDatabase(this IApplicationBuilder app,
-            IServiceProvider serviceProvider)
+        public static async Task<IApplicationBuilder> SeedDatabase(this IApplicationBuilder app, IServiceProvider serviceProvider)
         {
             var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
             var mapper = serviceProvider.GetRequiredService<IMapper>();

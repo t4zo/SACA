@@ -23,7 +23,7 @@
         //         Email = userName,
         //     };
         //
-        //     var result = await _userManager.CreateAsync(user, password);
+        //     var result = await _userManager.SignInAsync(user, password);
         //
         //     return (result.ToApplicationResult(), user.Id);
         // }
