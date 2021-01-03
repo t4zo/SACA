@@ -20,6 +20,13 @@ namespace SACA.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("helloWorld")]
+        public string HelloWorld()
+        {
+            return "Hello, World :)";
+        }
+
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetAll()
         {
