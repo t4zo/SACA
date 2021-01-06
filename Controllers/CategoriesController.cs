@@ -42,7 +42,6 @@ namespace SACA.Controllers
                     {
                         Id = c.Id,
                         Name = c.Name,
-                        IconName = c.IconName,
                         Images = c.Images.Select(i => new Image
                         {
                             Id = i.Id,
@@ -79,7 +78,6 @@ namespace SACA.Controllers
                 {
                     Id = c.Id,
                     Name = c.Name,
-                    IconName = c.IconName,
                     Images = c.Images.Select(i => new Image
                     {
                         Id = i.Id,

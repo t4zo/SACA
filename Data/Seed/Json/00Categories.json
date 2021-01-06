@@ -1,37 +1,30 @@
 [
   {
     "Id": 1,
-    "Name": "Pessoal",
-    "IconName": "mobile-alt"
+    "Name": "Pessoal"
   },
   {
     "Id": 2,
-    "Name": "Respostas Rápidas",
-    "IconName": "wind"
+    "Name": "Respostas Rápidas"
   },
   {
     "Id": 3,
-    "Name": "Pessoas",
-    "IconName": "user"
+    "Name": "Pessoas"
   },
   {
     "Id": 4,
-    "Name": "Verbo",
-    "IconName": "walking"
+    "Name": "Verbo"
   },
   {
     "Id": 5,
-    "Name": "Substantivos",
-    "IconName": "stripe-s"
+    "Name": "Substantivos"
   },
   {
     "Id": 6,
-    "Name": "Adjetivos",
-    "IconName": "dyalog"
+    "Name": "Adjetivos"
   },
   {
     "Id": 7,
-    "Name": "Social",
-    "IconName": "child"
+    "Name": "Social"
   }
 ]
