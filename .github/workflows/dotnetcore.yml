@@ -1,0 +1,43 @@
+name: SACA Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.100
+      - name: Restore
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Deploy to droplet using SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          # key: ${{ secrets.PRIVATE_KEY }}
+          debug: true
+          script: |
+            logname
+            sudo systemctl stop saca
+            export Provider=DigitalOcean
+            export Database=Postgres
+            cd ${{ secrets.DOCROOT }}
+            git pull
+            dotnet build --configuration Release
+            dotnet publish --configuration Release --no-build
+            dotnet-ef database update
+            sudo systemctl start saca
+      
