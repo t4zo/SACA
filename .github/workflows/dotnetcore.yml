@@ -44,6 +44,7 @@ jobs:
             sudo systemctl stop saca
             export Provider=DigitalOcean
             export Database=Postgres
+            export AppOptions__Token__SecurityKey=${{ secrets.APPOPTIONS__TOKEN__SECURITYKEY }}
             cd ${{ secrets.DOCROOT }}
             git pull
             dotnet build --configuration Release
