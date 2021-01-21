@@ -31,7 +31,6 @@ namespace SACA.Services
             {
                 File = new FileDescription($@"data:image/png;base64,{imageRequest.Base64}"),
                 PublicId = $"{_cloudinaryEnvironmentFolder}/_defaults/{Guid.NewGuid()}",
-                Async = true.ToString(),
                 Overwrite = true
             };
 
@@ -46,7 +45,6 @@ namespace SACA.Services
             {
                 File = new FileDescription($@"data:image/png;base64,{imageRequest.Base64}"),
                 PublicId = $"{_cloudinaryEnvironmentFolder}/users/{userId}/{Guid.NewGuid()}",
-                Async = true.ToString(),
                 Overwrite = true
             };
 
