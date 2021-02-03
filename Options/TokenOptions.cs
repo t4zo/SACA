@@ -1,5 +1,5 @@
-﻿using System.Text;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace SACA.Options
 {
@@ -9,7 +9,7 @@ namespace SACA.Options
         public string Audience { get; set; }
         public string SecurityKey { get; set; }
         public int Expiration { get; set; }
-        public SymmetricSecurityKey Key => new SymmetricSecurityKey(Encoding.ASCII.GetBytes(SecurityKey));
-        public SigningCredentials SigningCredentials => new SigningCredentials(Key, SecurityAlgorithms.HmacSha256Signature);
+        public SymmetricSecurityKey Key => new(Encoding.ASCII.GetBytes(SecurityKey));
+        public SigningCredentials SigningCredentials => new(Key, SecurityAlgorithms.HmacSha256Signature);
     }
 }

@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using AutoMapper;
+using Newtonsoft.Json;
+using SACA.Interfaces;
+using SACA.Models;
+using SACA.Models.Requests;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using AutoMapper;
-using Newtonsoft.Json;
-using SACA.Interfaces;
-using SACA.Models;
-using SACA.Models.Requests;
 
 namespace SACA.Data.Seed.Models
 {

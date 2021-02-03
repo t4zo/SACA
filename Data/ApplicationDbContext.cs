@@ -1,9 +1,9 @@
-﻿using System.Reflection;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SACA.Models;
 using SACA.Models.Identity;
+using System.Reflection;
 
 namespace SACA.Data
 {
@@ -11,14 +11,14 @@ namespace SACA.Data
     {
         private readonly IConfiguration _configuration;
 
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Image> Images { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IConfiguration configuration)
             : base(options)
         {
             _configuration = configuration;
         }
-
-        public DbSet<Category> Categories { get; set; }
-        public DbSet<Image> Images { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

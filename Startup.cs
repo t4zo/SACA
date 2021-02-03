@@ -1,5 +1,3 @@
-using System;
-using System.Reflection;
 using AutoMapper;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
@@ -19,17 +17,19 @@ using SACA.Interfaces;
 using SACA.Models.Identity;
 using SACA.Options;
 using SACA.Services;
+using System;
+using System.Reflection;
 
 namespace SACA
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {

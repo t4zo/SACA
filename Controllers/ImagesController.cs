@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using ImageMagick;
 using LanguageExt;
@@ -13,6 +9,10 @@ using SACA.Interfaces;
 using SACA.Models;
 using SACA.Models.Requests;
 using SACA.Models.Responses;
+using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace SACA.Controllers
 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using CloudinaryDotNet;
+﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using ImageMagick;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +8,9 @@ using SACA.Interfaces;
 using SACA.Models;
 using SACA.Models.Requests;
 using SACA.Options;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SACA.Services
 {

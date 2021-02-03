@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using SACA.Models;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -6,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using SACA.Models;
 
 namespace SACA.Data.Seed
 {
@@ -14,13 +14,13 @@ namespace SACA.Data.Seed
     {
         protected readonly ApplicationDbContext _context;
 
+        protected string RessourceName { get; set; }
+
         protected EntitySeed(ApplicationDbContext context, string ressourceName)
         {
             _context = context;
             RessourceName = ressourceName;
         }
-
-        protected string RessourceName { get; set; }
 
         public virtual async Task LoadAsync()
         {

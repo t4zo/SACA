@@ -1,11 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using SACA.Data;
 using SACA.Data.Seed.Models;
 using SACA.Interfaces;
+using System;
+using System.Threading.Tasks;
 
 namespace SACA.Extensions
 {

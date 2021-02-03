@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using SACA.Models.Identity;
+﻿using SACA.Models.Identity;
+using System.Text.Json.Serialization;
 
 namespace SACA.Models
 {
@@ -7,7 +7,8 @@ namespace SACA.Models
     {
         public int CategoryId { get; set; }
 
-        [JsonIgnore] public Category Category { get; set; }
+        [JsonIgnore]
+        public Category Category { get; set; }
 
         public int? UserId { get; set; }
         public ApplicationUser User { get; set; }

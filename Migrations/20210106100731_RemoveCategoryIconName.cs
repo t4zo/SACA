@@ -7,16 +7,16 @@ namespace SACA.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "icon_name",
-                table: "categories");
+                "icon_name",
+                "categories");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "icon_name",
-                table: "categories",
-                type: "text",
+                "icon_name",
+                "categories",
+                "text",
                 nullable: true);
         }
     }

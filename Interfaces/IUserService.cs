@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using OneOf;
+﻿using OneOf;
 using SACA.Models.Identity;
 using SACA.Models.Requests;
 using SACA.Models.Responses;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SACA.Interfaces
 {

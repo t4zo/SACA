@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using OneOf;
 using SACA.Extensions;
@@ -11,6 +6,11 @@ using SACA.Interfaces;
 using SACA.Models.Identity;
 using SACA.Models.Requests;
 using SACA.Models.Responses;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using static SACA.Constants.AuthorizationConstants;
 
 namespace SACA.Services
