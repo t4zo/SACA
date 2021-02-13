@@ -82,15 +82,15 @@ namespace SACA
 
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddControllers().AddFluentValidation(configureExpression =>
+            services.AddControllers()
+                .AddFluentValidation(configureExpression =>
             {
                 configureExpression.LocalizationEnabled = true;
-                //configureExpression.ValidatorOptions.
                 configureExpression.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -100,9 +100,7 @@ namespace SACA
 
             app.UseProblemDetails();
 
-            app.SeedDatabase(serviceProvider).GetAwaiter().GetResult();
-            app.CreateRoles(serviceProvider).GetAwaiter().GetResult();
-            app.CreateUsers(serviceProvider).GetAwaiter().GetResult();
+            app.SeedDatabaseAsync().GetAwaiter().GetResult();
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {

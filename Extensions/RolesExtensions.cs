@@ -12,13 +12,12 @@ namespace SACA.Extensions
 {
     public static class RolesExtensions
     {
-        public static async Task<IApplicationBuilder> CreateRoles(this IApplicationBuilder app, IServiceProvider serviceProvider)
+        public static async Task<IServiceProvider> CreateRolesAsync(this IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
             var appOptions = serviceProvider.GetRequiredService<IOptionsSnapshot<AppOptions>>().Value;
 
-            var hasRoles = await roleManager.Roles.AnyAsync();
-            if (!hasRoles)
+            if (!await roleManager.Roles.AnyAsync())
             {
                 foreach (var role in appOptions.Roles)
                 {
@@ -30,7 +29,7 @@ namespace SACA.Extensions
                 }
             }
 
-            return app;
+            return serviceProvider;
         }
     }
 }

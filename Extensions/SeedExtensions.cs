@@ -11,11 +11,16 @@ namespace SACA.Extensions
 {
     public static class SeedExtensions
     {
-        public static async Task<IApplicationBuilder> SeedDatabase(this IApplicationBuilder app, IServiceProvider serviceProvider)
+        public static async Task<IApplicationBuilder> SeedDatabaseAsync(this IApplicationBuilder app)
         {
-            var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
-            var mapper = serviceProvider.GetRequiredService<IMapper>();
-            var imageService = serviceProvider.GetRequiredService<IImageService>();
+            var serviceScope = app.ApplicationServices.CreateScope();
+            var context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            await serviceScope.ServiceProvider.CreateRolesAsync();
+            await serviceScope.ServiceProvider.CreateUsersAsync();
+            
+            var mapper = serviceScope.ServiceProvider.GetRequiredService<IMapper>();
+            var imageService = serviceScope.ServiceProvider.GetRequiredService<IImageService>();
 
             await new CategoriesSeed(context).LoadAsync();
             await new ImagesSeed(context, imageService, mapper).LoadAsync();

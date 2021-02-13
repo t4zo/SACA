@@ -15,15 +15,14 @@ namespace SACA.Extensions
 {
     public static class UsersExtensions
     {
-        public static async Task<IApplicationBuilder> CreateUsers(this IApplicationBuilder app, IServiceProvider serviceProvider)
+        public static async Task<IServiceProvider> CreateUsersAsync(this IServiceProvider serviceProvider)
         {
             var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
             var appOptions = serviceProvider.GetRequiredService<IOptionsSnapshot<AppOptions>>().Value;
 
-            var hasUsers = await context.Users.AnyAsync();
-            if (!hasUsers)
+            if (!await context.Users.AnyAsync())
             {
                 foreach (var userOptions in appOptions.Users)
                 {
@@ -47,7 +46,7 @@ namespace SACA.Extensions
                 }
             }
 
-            return app;
+            return serviceProvider;
         }
 
         private static async Task SeedUserClaims(UserManager<ApplicationUser> userManager, ApplicationUser user, string role)
