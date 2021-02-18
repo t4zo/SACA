@@ -5,26 +5,22 @@
   },
   {
     "Id": 2,
-    "Name": "Respostas Rápidas"
-  },
-  {
-    "Id": 3,
     "Name": "Pessoas"
   },
   {
-    "Id": 4,
+    "Id": 3,
     "Name": "Verbo"
   },
   {
-    "Id": 5,
+    "Id": 4,
     "Name": "Substantivos"
   },
   {
-    "Id": 6,
+    "Id": 5,
     "Name": "Adjetivos"
   },
   {
-    "Id": 7,
+    "Id": 6,
     "Name": "Social"
   }
 ]
