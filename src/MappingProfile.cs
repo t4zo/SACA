@@ -12,8 +12,8 @@ namespace SACA
         {
             CreateMap<Image, ImageResponse>().ReverseMap();
             CreateMap<Image, ImageRequest>().ReverseMap();
-            CreateMap<ApplicationUser, UserResponse>();
-            CreateMap<UserResponse, SignInRequest>();
+            CreateMap<ApplicationUser, UserResponse>().ReverseMap();
+            CreateMap<UserResponse, SignInRequest>().ReverseMap();
         }
     }
 }

@@ -1,17 +1,16 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using ImageMagick;
-using LanguageExt;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SACA.Data;
+using SACA.Extensions;
 using SACA.Interfaces;
 using SACA.Models;
 using SACA.Models.Requests;
 using SACA.Models.Responses;
 using System;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace SACA.Controllers
@@ -32,24 +31,27 @@ namespace SACA.Controllers
         [HttpGet]
         public async Task<ActionResult<ImageResponse>> Get()
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userId = User.GetId();
 
-            var image = await _context.Images
+            var imageResponse = await _context.Images
                 .AsNoTracking()
-                .Include(x => x.User)
+                .Include(x => x.User.Id == userId)
                 .Where(x => x.UserId == userId)
+                .ProjectTo<ImageResponse>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
 
-            return OptionUnsafe<Image>.Some(image)
-                .MatchUnsafe<ActionResult<ImageResponse>>(
-                    imageResponse => Ok(_mapper.Map<ImageResponse>(imageResponse)),
-                    () => NotFound());
+            if (imageResponse is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(imageResponse);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ImageResponse>> Get(int id)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userId = User.GetId();
 
             var imageResponse = await _context.Images
                 .Include(x => x.User)
@@ -57,6 +59,11 @@ namespace SACA.Controllers
                 .Where(x => x.Id == id && x.UserId == userId)
                 .ProjectTo<ImageResponse>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
+
+            if (imageResponse is null)
+            {
+                return NotFound();
+            }
 
             return Ok(imageResponse);
         }
@@ -66,7 +73,7 @@ namespace SACA.Controllers
         {
             var image = _mapper.Map<Image>(imageRequest);
 
-            image.UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            image.UserId = User.GetId();
 
             var user = await _context.Users
                 .Include(x => x.Categories)
@@ -105,7 +112,7 @@ namespace SACA.Controllers
                 return Forbid();
             }
 
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userId = User.GetId();
             var user = await _context.Users.FindAsync(userId);
 
             await _imageService.RemoveImageFromCloudinaryAsync(originalImage);
@@ -128,7 +135,7 @@ namespace SACA.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ImageResponse>> Remove(int id)
         {
-            var image = await _context.Images.FirstOrDefaultAsync(c => c.Id == id);
+            var image = await _context.Images.FindAsync(id);
             if (image is null)
             {
                 return NotFound();
@@ -161,7 +168,7 @@ namespace SACA.Controllers
         [HttpDelete("superuser/{id}")]
         public async Task<ActionResult<ImageResponse>> RemoveAdmin(int id)
         {
-            var image = await _context.Images.FirstOrDefaultAsync(c => c.Id == id);
+            var image = await _context.Images.FindAsync(id);
             if (image is null)
             {
                 return NotFound();

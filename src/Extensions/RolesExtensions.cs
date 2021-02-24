@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -24,7 +23,7 @@ namespace SACA.Extensions
                     var roleExists = await roleManager.RoleExistsAsync(role);
                     if (!roleExists)
                     {
-                        await roleManager.CreateAsync(new ApplicationRole {Name = role, NormalizedName = role.ToUpper()});
+                        await roleManager.CreateAsync(new ApplicationRole { Name = role, NormalizedName = role.ToUpper() });
                     }
                 }
             }

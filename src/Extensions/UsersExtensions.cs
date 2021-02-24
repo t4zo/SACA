@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -15,6 +14,17 @@ namespace SACA.Extensions
 {
     public static class UsersExtensions
     {
+        public static int? GetId(this ClaimsPrincipal claimsPrincipal)
+        {
+            var userId = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId is null)
+            {
+                return null;
+            }
+
+            return int.Parse(userId);
+        }
+
         public static async Task<IServiceProvider> CreateUsersAsync(this IServiceProvider serviceProvider)
         {
             var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
@@ -26,7 +36,7 @@ namespace SACA.Extensions
             {
                 foreach (var userOptions in appOptions.Users)
                 {
-                    var user = new ApplicationUser {Email = userOptions.Email, UserName = userOptions.UserName};
+                    var user = new ApplicationUser { Email = userOptions.Email, UserName = userOptions.UserName };
                     var result = await userManager.CreateAsync(user, userOptions.Password);
 
                     // Seeding M2M Table

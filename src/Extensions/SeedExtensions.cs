@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using SACA.Data;
 using SACA.Data.Seed.Models;
 using SACA.Interfaces;
-using System;
 using System.Threading.Tasks;
 
 namespace SACA.Extensions
@@ -18,7 +17,7 @@ namespace SACA.Extensions
 
             await serviceScope.ServiceProvider.CreateRolesAsync();
             await serviceScope.ServiceProvider.CreateUsersAsync();
-            
+
             var mapper = serviceScope.ServiceProvider.GetRequiredService<IMapper>();
             var imageService = serviceScope.ServiceProvider.GetRequiredService<IImageService>();
 

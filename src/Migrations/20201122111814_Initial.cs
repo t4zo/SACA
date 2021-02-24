@@ -114,7 +114,7 @@ namespace SACA.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_user_logins", x => new {x.login_provider, x.provider_key});
+                    table.PrimaryKey("pk_user_logins", x => new { x.login_provider, x.provider_key });
                     table.ForeignKey(
                         "fk_user_logins_asp_net_users_application_user_id",
                         x => x.user_id,
@@ -132,7 +132,7 @@ namespace SACA.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_user_roles", x => new {x.user_id, x.role_id});
+                    table.PrimaryKey("pk_user_roles", x => new { x.user_id, x.role_id });
                     table.ForeignKey(
                         "fk_user_roles_asp_net_roles_application_role_id",
                         x => x.role_id,
@@ -158,7 +158,7 @@ namespace SACA.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_user_tokens", x => new {x.user_id, x.login_provider, x.name});
+                    table.PrimaryKey("pk_user_tokens", x => new { x.user_id, x.login_provider, x.name });
                     table.ForeignKey(
                         "fk_user_tokens_asp_net_users_application_user_id",
                         x => x.user_id,
@@ -177,7 +177,7 @@ namespace SACA.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_application_user_category",
-                        x => new {x.application_users_id, x.categories_id});
+                        x => new { x.application_users_id, x.categories_id });
                     table.ForeignKey(
                         "fk_application_user_category_categories_categories_id",
                         x => x.categories_id,

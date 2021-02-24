@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SACA.Data;
+using SACA.Extensions;
 using SACA.Models;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace SACA.Controllers
@@ -21,53 +21,53 @@ namespace SACA.Controllers
 
         [AllowAnonymous]
         [HttpGet("helloWorld")]
-        public string HelloWorld()
+        public ActionResult HelloWorld()
         {
-            return "Hello, World :)";
+            return Ok("Hello, World :)");
         }
 
         [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetAll()
         {
-            if (User.Identity!.IsAuthenticated)
+            var baseQuery = _context.Categories
+                .AsNoTracking()
+                .Include(x => x.Images);
+
+            if (User.Identity is null || !User.Identity.IsAuthenticated)
             {
-                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-                var categories = await _context.Categories
-                    .AsNoTracking()
-                    .Include(x => x.Images)
-                    .Include(x => x.ApplicationUsers.Where(y => y.Id == userId))
-                    .Select(c => new Category
-                    {
-                        Id = c.Id,
-                        Name = c.Name,
-                        Images = c.Images.Select(i => new Image
-                        {
-                            Id = i.Id,
-                            Name = i.Name,
-                            CategoryId = i.CategoryId,
-                            UserId = i.UserId,
-                            Url = i.Url,
-                            FullyQualifiedPublicUrl = i.FullyQualifiedPublicUrl
-                        }).ToList()
-                    })
+                return await baseQuery
+                    .Where(x => x.Id != 1)
                     .ToListAsync();
-
-                return categories;
             }
 
-            return await _context.Categories
-                .AsNoTracking()
-                .Include(x => x.Images)
-                .Where(x => x.Id != 1)
+            var userId = User.GetId();
+
+            var categories = await baseQuery
+                .Include(x => x.ApplicationUsers.Where(y => y.Id == userId))
+                .Select(c => new Category
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Images = c.Images.Select(i => new Image
+                    {
+                        Id = i.Id,
+                        Name = i.Name,
+                        CategoryId = i.CategoryId,
+                        UserId = i.UserId,
+                        Url = i.Url,
+                        FullyQualifiedPublicUrl = i.FullyQualifiedPublicUrl
+                    }).ToList()
+                })
                 .ToListAsync();
+
+            return categories;
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Category>> Get(int id)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userId = User.GetId();
 
             var category = await _context.Categories
                 .AsNoTracking()

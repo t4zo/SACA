@@ -9,6 +9,7 @@ using SACA.Interfaces;
 using SACA.Models.Identity;
 using SACA.Models.Requests;
 using SACA.Models.Responses;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,49 +33,48 @@ namespace SACA.Controllers
 
         [AllowAnonymous]
         [HttpPost("signIn")]
-        public async Task<ActionResult> SignIn(SignInRequest signInRequest)
+        public async Task<ActionResult<UserResponse>> SignIn(SignInRequest signInRequest)
         {
-            var userOneOf = await _userService.LogInAsync(signInRequest.Email, signInRequest.Password, signInRequest.Remember);
+            UserResponse userResponse;
 
-            return userOneOf.Match<ActionResult>(
-                user => Ok(new SignInResponse {Success = true, Message = "Usuário logado!", User = user}),
-                argumentException => BadRequest(new ProblemDetails {Title = "Bad Request", Type = "https://httpstatuses.com/400", Detail = argumentException.Message})
-            );
+            try
+            {
+                userResponse = await _userService.LogInAsync(signInRequest.Email, signInRequest.Password, signInRequest.Remember);
+            }
+            catch (ArgumentException argumentException)
+            {
+                return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = argumentException.Message });
+            }
+
+            return userResponse;
         }
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult> Create(SignUpRequest signUpRequest)
+        public async Task<ActionResult<SignInResponse>> Create(SignUpRequest signUpRequest)
         {
             UserResponse userResponse;
+
             try
             {
-                userResponse = await _userService.SignInAsync(signUpRequest);
+                var applicationUser = await _userService.SignUpAsync(signUpRequest);
+                await _userService.AssignRolesAsync(applicationUser, signUpRequest.Roles);
+                userResponse = await _userService.LogInAsync(signUpRequest.Email, signUpRequest.Password);
             }
-            catch
+            catch (ArgumentException argumentException)
             {
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Bad Request", Type = "https://httpstatuses.com/400",
-                    Detail = "Erro ao criar usuário, email e/ou senha inválido(s)"
-                });
+                return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = argumentException.Message });
             }
 
             var user = await _context.Users.FindAsync(userResponse.Id);
-
             user.Categories = await _context.Categories
                 .AsNoTracking()
-                .Include(x => x.Images.Where(i => i.CategoryId.ToString() != "1"))
+                .Where(x => x.Id != 1)
                 .ToListAsync();
 
             await _context.SaveChangesAsync();
 
-            var userOneOf = await _userService.LogInAsync(signUpRequest.Email, signUpRequest.Password);
-
-            return userOneOf.Match<ActionResult>(
-                userResult => Ok(new SignInResponse {Success = true, Message = "Usuário logado!", User = userResult}),
-                argumentException => BadRequest(new ProblemDetails {Title = "Bad Request", Type = "https://httpstatuses.com/400", Detail = argumentException.Message})
-            );
+            return Ok(new SignInResponse { Success = true, Message = "Usuário logado!", User = userResponse });
         }
 
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
@@ -110,7 +110,7 @@ namespace SACA.Controllers
 
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApplicationUser>> Remove(int id)
+        public async Task<ActionResult<UserResponse>> Remove(int id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user is null)
@@ -123,7 +123,7 @@ namespace SACA.Controllers
 
             await _context.SaveChangesAsync();
 
-            return user;
+            return _mapper.Map<UserResponse>(user);
         }
     }
 }

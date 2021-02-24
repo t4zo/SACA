@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using OneOf;
+using Microsoft.EntityFrameworkCore;
+using SACA.Constants;
 using SACA.Extensions;
 using SACA.Interfaces;
 using SACA.Models.Identity;
@@ -11,7 +12,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using static SACA.Constants.AuthorizationConstants;
 
 namespace SACA.Services
 {
@@ -30,7 +30,7 @@ namespace SACA.Services
             _mapper = mapper;
         }
 
-        public async Task<UserResponse> SignInAsync(SignUpRequest signUpRequest)
+        public async Task<ApplicationUser> SignUpAsync(SignUpRequest signUpRequest)
         {
             var user = new ApplicationUser
             {
@@ -41,40 +41,47 @@ namespace SACA.Services
             var result = await _userManager.CreateAsync(user, signUpRequest.Password);
             if (!result.Succeeded)
             {
+                //throw new ArgumentException("Erro ao criar usuário, email e/ou senha inválido(s)");
                 throw new ArgumentException(result.Errors.First().Description);
             }
+            
+            return user;
+        }
 
-            var roles = typeof(Roles).GetAllPublicConstantValues<string>();
-            foreach (var role in signUpRequest.Roles)
+        public async Task<ApplicationUser> AssignRolesAsync(ApplicationUser user, ICollection<string> roles)
+        {
+            var allRoles = typeof(AuthorizationConstants.Roles).GetAllPublicConstantValues<string>();
+            
+            foreach (var role in roles)
             {
-                if (roles.Contains(role))
+                if (allRoles.Contains(role))
                 {
                     await _userManager.AddToRoleAsync(user, role);
                 }
             }
 
-            await _userManager.AddToRoleAsync(user, Roles.User);
+            await _userManager.AddToRoleAsync(user, AuthorizationConstants.Roles.User);
 
-            return _mapper.Map<UserResponse>(user);
+            return user;
         }
 
-        public async Task<OneOf<UserResponse, ArgumentException>> LogInAsync(string username, string password, bool remember)
+        public async Task<UserResponse> LogInAsync(string username, string password, bool remember)
         {
             var result = await _signInManager.PasswordSignInAsync(username, password, remember, false);
             if (!result.Succeeded)
             {
-                return new ArgumentException("Usuário e/ou senha inválido(s)");
+                throw new ArgumentException("Usuário e/ou senha inválido(s)");
             }
 
             var user = await _userManager.FindByNameAsync(username);
-            var userClaims = await _userManager.GetClaimsAsync(user);
+            //var userClaims = await _userManager.GetClaimsAsync(user);
             var roles = await _userManager.GetRolesAsync(user);
 
             var claimsIdentity = new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(Remember, remember.ToString().ToLower())
+                new Claim(AuthorizationConstants.Remember, remember.ToString().ToLower())
             });
 
             claimsIdentity.AddClaims(roles.Select(role => new Claim(ClaimTypes.Role, role)));
@@ -89,9 +96,21 @@ namespace SACA.Services
             return userResponse;
         }
 
-        public async Task DeleteAsync(ApplicationUser user)
+        public async Task<string> GetUserNameAsync(int userId)
         {
-            await _userManager.DeleteAsync(user);
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            return user.UserName;
+        }
+
+        public async Task<IdentityResult> DeleteAsync(int userId)
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            return await _userManager.DeleteAsync(user);
+        }
+
+        public async Task<IdentityResult> DeleteAsync(ApplicationUser user)
+        {
+            return await _userManager.DeleteAsync(user);
         }
 
         public async Task<ICollection<string>> GetRolesAsync(ApplicationUser user)

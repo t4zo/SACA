@@ -1,4 +1,3 @@
-using AutoMapper;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
@@ -84,10 +83,10 @@ namespace SACA
 
             services.AddControllers()
                 .AddFluentValidation(configureExpression =>
-            {
-                configureExpression.LocalizationEnabled = true;
-                configureExpression.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-            });
+                {
+                    configureExpression.LocalizationEnabled = true;
+                    configureExpression.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+                });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
