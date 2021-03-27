@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using SACA.Models.Identity;
+using SACA.Entities.Identity;
 using System.Linq;
 using System.Threading.Tasks;
 using static SACA.Constants.AuthorizationConstants;

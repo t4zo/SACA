@@ -1,7 +1,7 @@
-﻿using SACA.Models.Identity;
+﻿using SACA.Entities.Identity;
 using System.Text.Json.Serialization;
 
-namespace SACA.Models
+namespace SACA.Entities
 {
     public class Image : BaseEntity
     {

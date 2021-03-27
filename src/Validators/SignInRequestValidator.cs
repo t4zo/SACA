@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using SACA.Models.Requests;
+using SACA.Entities.Requests;
 
 namespace SACA.Validators
 {

@@ -1,4 +1,4 @@
-﻿using SACA.Models;
+﻿using SACA.Entities;
 
 namespace SACA.Data.Seed.Models
 {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SACA.Constants;
-using SACA.Models;
+using SACA.Entities;
 
 namespace SACA.Data.Configuration
 {

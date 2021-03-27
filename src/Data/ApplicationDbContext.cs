@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SACA.Models;
-using SACA.Models.Identity;
+using SACA.Entities;
+using SACA.Entities.Identity;
 using System.Reflection;
 
 namespace SACA.Data

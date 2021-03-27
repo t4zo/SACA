@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SACA.Models.Responses
+namespace SACA.Entities.Responses
 {
     public class UserResponse : BaseEntity
     {

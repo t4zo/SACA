@@ -1,4 +1,4 @@
-﻿namespace SACA.Models.Requests
+﻿namespace SACA.Entities.Requests
 {
     public class SignInRequest
     {

@@ -1,7 +1,7 @@
-﻿using SACA.Models.Identity;
+﻿using SACA.Entities.Identity;
 using System.Collections.Generic;
 
-namespace SACA.Models
+namespace SACA.Entities
 {
     public class Category : BaseEntity
     {

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SACA.Data;
 using SACA.Extensions;
-using SACA.Models;
+using SACA.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

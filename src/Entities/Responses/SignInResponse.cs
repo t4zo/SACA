@@ -1,4 +1,4 @@
-﻿namespace SACA.Models.Responses
+﻿namespace SACA.Entities.Responses
 {
     public class SignInResponse
     {

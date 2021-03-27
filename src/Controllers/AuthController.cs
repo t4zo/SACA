@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using SACA.Constants;
 using SACA.Data;
 using SACA.Interfaces;
-using SACA.Models.Identity;
-using SACA.Models.Requests;
-using SACA.Models.Responses;
+using SACA.Entities.Identity;
+using SACA.Entities.Requests;
+using SACA.Entities.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,8 +50,8 @@ namespace SACA.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost]
-        public async Task<ActionResult<SignInResponse>> Create(SignUpRequest signUpRequest)
+        [HttpPost("signUp")]
+        public async Task<ActionResult<UserResponse>> Create(SignUpRequest signUpRequest)
         {
             UserResponse userResponse;
 
@@ -74,7 +74,7 @@ namespace SACA.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new SignInResponse { Success = true, Message = "Usuário logado!", User = userResponse });
+            return userResponse;
         }
 
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]

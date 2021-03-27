@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Newtonsoft.Json;
 using SACA.Interfaces;
-using SACA.Models;
-using SACA.Models.Requests;
+using SACA.Entities;
+using SACA.Entities.Requests;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

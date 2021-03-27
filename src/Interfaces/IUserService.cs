@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SACA.Models.Identity;
-using SACA.Models.Requests;
-using SACA.Models.Responses;
+using SACA.Entities.Identity;
+using SACA.Entities.Requests;
+using SACA.Entities.Responses;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

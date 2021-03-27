@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SACA.Models.Requests
+namespace SACA.Entities.Requests
 {
     public class SignUpRequest
     {

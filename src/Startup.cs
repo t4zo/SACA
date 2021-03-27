@@ -13,7 +13,7 @@ using SACA.Data;
 using SACA.Extensions;
 using SACA.i18n;
 using SACA.Interfaces;
-using SACA.Models.Identity;
+using SACA.Entities.Identity;
 using SACA.Options;
 using SACA.Services;
 using System;

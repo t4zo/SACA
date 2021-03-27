@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace SACA.Models.Identity
+namespace SACA.Entities.Identity
 {
     public class ApplicationRole : IdentityRole<int>
     {

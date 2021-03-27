@@ -1,6 +1,6 @@
 ﻿using ImageMagick;
-using SACA.Models;
-using SACA.Models.Requests;
+using SACA.Entities;
+using SACA.Entities.Requests;
 using System.Threading.Tasks;
 
 namespace SACA.Interfaces
