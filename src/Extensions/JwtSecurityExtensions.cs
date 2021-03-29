@@ -30,7 +30,7 @@ namespace SACA.Extensions
                         IssuerSigningKey = appOptions.Token.Key,
 
                         // Validate the JWT Issuer (iss) claim
-                        ValidateIssuer = true,
+                        ValidateIssuer = false,
                         ValidIssuer = appOptions.Token.Issuer,
 
                         // Validate the JWT Audience (aud) claim
