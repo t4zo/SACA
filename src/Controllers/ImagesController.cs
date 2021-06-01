@@ -9,6 +9,7 @@ using SACA.Interfaces;
 using SACA.Entities;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
+using SACA.Exceptions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -106,12 +107,19 @@ namespace SACA.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ImageResponse>> Update(int id, ImageRequest imageRequest)
         {
-            var originalImage = await _context.Images.FirstOrDefaultAsync(c => c.Id == id);
-            if (originalImage is null || originalImage.Id != imageRequest.Id)
+            if (id != imageRequest.Id)
             {
-                return Forbid();
+                return NotFound("The image was not found");
+                // throw new ImageNotFoundException("The image was not found");
             }
-
+            var originalImage = await _context.Images.FirstOrDefaultAsync(c => c.Id == id);
+            
+            if (originalImage is null)
+            {
+                return NotFound("The image was not found");
+                // throw new ImageNotFoundException("The image was not found");
+            }
+            
             var userId = User.GetId();
             var user = await _context.Users.FindAsync(userId);
 

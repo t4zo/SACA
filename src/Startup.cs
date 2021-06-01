@@ -14,6 +14,7 @@ using SACA.Extensions;
 using SACA.i18n;
 using SACA.Interfaces;
 using SACA.Entities.Identity;
+using SACA.Middlewares;
 using SACA.Options;
 using SACA.Services;
 using System;
@@ -35,6 +36,8 @@ namespace SACA
             services.AddTransient<IUserService, UserService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddTransient<IImageService, ImageService>();
+
+            services.AddTransient<ExceptionHandlerMiddleware>();
 
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
             services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
@@ -111,6 +114,7 @@ namespace SACA
             app.UseConfiguredSwagger();
 
             app.UseRouting();
+            app.UseMiddleware<ExceptionHandlerMiddleware>();
             app.UseCors();
 
             app.UseAuthentication();
