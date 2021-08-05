@@ -49,7 +49,7 @@ namespace SACA.Controllers
                 {
                     Id = c.Id,
                     Name = c.Name,
-                    Images = c.Images.Select(i => new Image
+                    Images = c.Images.Where(i => i.UserId == null || i.UserId == userId).Select(i => new Image
                     {
                         Id = i.Id,
                         Name = i.Name,
@@ -78,7 +78,7 @@ namespace SACA.Controllers
                 {
                     Id = c.Id,
                     Name = c.Name,
-                    Images = c.Images.Select(i => new Image
+                    Images = c.Images.Where(i => i.UserId == null || i.UserId == userId).Select(i => new Image
                     {
                         Id = i.Id,
                         Name = i.Name,
