@@ -53,6 +53,8 @@ namespace SACA
 
             services.AddProblemDetails(configure => { configure.IncludeExceptionDetails = (ctx, exp) => true; });
 
+            services.AddHealthChecks();
+
             services.AddIdentityCore<ApplicationUser>(options =>
                 {
                     options.Password.RequireDigit = true;
@@ -114,13 +116,14 @@ namespace SACA
             app.UseConfiguredSwagger();
 
             app.UseRouting();
+
             app.UseMiddleware<ExceptionHandlerMiddleware>();
             app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers().RequireAuthorization(); });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers().RequireAuthorization(); endpoints.MapHealthChecks("/health"); });
         }
     }
 }

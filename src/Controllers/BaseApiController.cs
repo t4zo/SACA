@@ -2,7 +2,7 @@
 
 namespace SACA.Controllers
 {
-    [Route("saca/v2/[controller]")]
+    [Route("v2/[controller]")]
     [ApiController]
     public class BaseApiController : ControllerBase
     {

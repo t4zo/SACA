@@ -16,7 +16,7 @@ namespace SACA
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     //webBuilder.UseSentry();
-                    webBuilder.UseStartup<Startup>().UseUrls("http://localhost:5800");
+                    webBuilder.UseStartup<Startup>().UseUrls("http://*:5800");
                 });
         }
     }
