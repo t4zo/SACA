@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using System.Net;
 
 namespace SACA
 {
@@ -16,7 +17,12 @@ namespace SACA
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     //webBuilder.UseSentry();
-                    webBuilder.UseStartup<Startup>().UseUrls("http://*:5800");
+                    webBuilder.UseKestrel(options =>
+                    {
+                        options.Listen(IPAddress.Any, 5800);
+                    });
+
+                    webBuilder.UseStartup<Startup>();
                 });
         }
     }
