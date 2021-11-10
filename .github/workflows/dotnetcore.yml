@@ -43,6 +43,7 @@ jobs:
   #           logname
   #           sudo systemctl stop saca
   #           export AppOptions__Token__SecurityKey=${{ secrets.APPOPTIONS__TOKEN__SECURITYKEY }}
+  #           export CloudinaryOptions__ApiEnvironmentVariable=${{ secrets.CLOUDINARYOPTIONS__APIENVIRONMENTVARIABLE }}
   #           cd ${{ secrets.DOCROOT }}
   #           git pull
   #           dotnet build --configuration Release
