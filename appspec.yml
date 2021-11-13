@@ -1,0 +1,23 @@
+version: 0.0
+os: linux
+files:
+ - source: .
+   destination: /var/www/saca
+
+# permissions:
+#   - object: /home/ubuntu
+#     owner: ubuntu
+#     group: ubuntu
+#     type:
+#       - directory
+#       - file
+
+hooks:
+  AfterInstall:
+   - location: scripts/deploy.sh
+     timeout: 300
+     runas: ubuntu
+  ApplicationStart:
+   - location: scripts/start_server
+     timeout: 300
+     runas: ubuntu
