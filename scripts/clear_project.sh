@@ -1,3 +1,5 @@
 #!/bin/bash
-cd /var/www/saca/src
-rm -rf ./{*,.*}
+cd /var/www
+rm -rf saca
+mkdir saca
+cd saca
