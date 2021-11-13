@@ -10,6 +10,10 @@ permissions:
     group: ubuntu
 
 hooks:
+  # BeforeInstall:
+  #   - location: scripts/clear_project.sh
+  #     timeout: 300
+  #     runas: ubuntu
   ApplicationStop:
    - location: scripts/stop_server.sh
      timeout: 300

@@ -9,7 +9,7 @@ namespace SACA.Controllers
         [HttpGet("/")]
         public ActionResult<string> Index()
         {
-            return "SACA";
+            return "SACA v2";
         }
     }
 }

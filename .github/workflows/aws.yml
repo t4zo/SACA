@@ -45,4 +45,4 @@ jobs:
             --deployment-group-name saca-deplyment-group \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
             --github-location repository=${{ github.repository }},commitId=${{ github.sha }} \
-            --file-exists-behavior=RETAIN
+            --file-exists-behavior=OVERWRITE
