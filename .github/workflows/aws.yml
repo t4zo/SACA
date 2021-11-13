@@ -1,4 +1,4 @@
-name: SACA Build and Test
+name: SACA Deployment on EC2
 
 on:
   push:
@@ -44,4 +44,4 @@ jobs:
             --application-name saca \
             --deployment-group-name saca-deplyment-group \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --github-location repository=${{ github.repository }}, commitId=${{ github.sha }}
+            --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
