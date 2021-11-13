@@ -13,11 +13,15 @@ files:
 #       - file
 
 hooks:
+  ApplicationStop:
+   - location: scripts/stop_server.sh
+     timeout: 300
+     runas: ubuntu
   AfterInstall:
    - location: scripts/deploy.sh
      timeout: 300
      runas: ubuntu
   ApplicationStart:
-   - location: scripts/start_server
+   - location: scripts/start_server.sh
      timeout: 300
      runas: ubuntu
