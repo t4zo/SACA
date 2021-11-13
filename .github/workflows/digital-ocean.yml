@@ -1,4 +1,4 @@
-name: SACA Build and Test
+name: SACA Deployment on Droplet
 
 on:
   push:

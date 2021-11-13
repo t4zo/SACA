@@ -4,13 +4,10 @@ files:
  - source: .
    destination: /var/www/saca
 
-# permissions:
-#   - object: /home/ubuntu
-#     owner: ubuntu
-#     group: ubuntu
-#     type:
-#       - directory
-#       - file
+permissions:
+  - object: /var/www/saca
+    owner: ubuntu
+    group: ubuntu
 
 hooks:
   ApplicationStop:
