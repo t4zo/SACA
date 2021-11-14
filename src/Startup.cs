@@ -111,8 +111,6 @@ namespace SACA
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
             });
 
-            app.UseHttpsRedirection();
-
             app.UseConfiguredSwagger();
 
             app.UseRouting();

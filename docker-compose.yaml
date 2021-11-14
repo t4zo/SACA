@@ -1,14 +1,47 @@
 version: '3'
+
 services: 
   saca:
-    build: SACA/
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    container_name: saca
     ports:
-    - "8000:80"
-    - "8001:443"
+    - "80:5800"
+    - "443:443"
     environment:
-      ASPNETCORE_URLS: "https://+;http://+"
-      ASPNETCORE_HTTPS_PORT: "8001"
-      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=saca_db;Port=5432;Database=SACA;User ID=postgres;Password=123qwe"
+      DB_CONNECTION_STRING: "Host=saca_db;Port=5432;Database=SACA;User ID=postgres;Password=123qwe"
+      ASPNETCORE_URLS: "http://*:5800;https://*:443"
+      ASPNETCORE_HTTPS_PORT: "443"
+      ASPNETCORE_ENVIRONMENT: Production
     volumes:
-      - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
-      - ${USERPROFILE}\.aspnet\https:/root/.aspnet/https/ 
+      - ${USERPROFILE}\.aspnet\https:/root/.aspnet/https/
+      # - ${APPDATA}\microsoft\UserSecrets\:/root/.microsoft/usersecrets
+    networks:
+      - mynetwork
+
+  db:
+    image: postgres:10
+    container_name: saca_db
+    restart: always
+    environment:
+      # POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123qwe
+      # POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata_compose
+    volumes:
+      - ./dbscripts/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+      - ${USERPROFILE}\docker\volumes\databases\postgres\pgdata:/var/lib/postgresql/data/pgdata_compose
+    ports:
+      - 5432:5432
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
+
+  

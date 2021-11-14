@@ -233,3 +233,6 @@ _Pvt_Extensions
 
 # Jetbrain's Rider
 .idea
+
+dbscripts
+dev.Dockerfile
