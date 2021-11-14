@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SACA.Data;
-using SACA.Extensions;
 using SACA.Entities;
+using SACA.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,13 +17,6 @@ namespace SACA.Controllers
         public CategoriesController(ApplicationDbContext context)
         {
             _context = context;
-        }
-
-        [AllowAnonymous]
-        [HttpGet("helloWorld")]
-        public ActionResult HelloWorld()
-        {
-            return Ok("Hello, World :)");
         }
 
         [AllowAnonymous]

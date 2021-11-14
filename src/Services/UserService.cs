@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SACA.Constants;
-using SACA.Extensions;
-using SACA.Interfaces;
 using SACA.Entities.Identity;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
+using SACA.Extensions;
+using SACA.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,14 +44,14 @@ namespace SACA.Services
                 //throw new ArgumentException("Erro ao criar usuário, email e/ou senha inválido(s)");
                 throw new ArgumentException(result.Errors.First().Description);
             }
-            
+
             return user;
         }
 
         public async Task<ApplicationUser> AssignRolesAsync(ApplicationUser user, ICollection<string> roles)
         {
             var allRoles = typeof(AuthorizationConstants.Roles).GetAllPublicConstantValues<string>();
-            
+
             foreach (var role in roles)
             {
                 if (allRoles.Contains(role))

@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SACA.Constants;
 using SACA.Data;
-using SACA.Interfaces;
 using SACA.Entities.Identity;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
+using SACA.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,15 +19,15 @@ namespace SACA.Controllers
     public class AuthController : BaseApiController
     {
         private readonly ApplicationDbContext _context;
-        private readonly IImageService _imageService;
+        private readonly IS3Service _s3Service;
         private readonly IMapper _mapper;
         private readonly IUserService _userService;
 
-        public AuthController(ApplicationDbContext context, IUserService userService, IImageService imageService, IMapper mapper)
+        public AuthController(ApplicationDbContext context, IUserService userService, IS3Service s3Service, IMapper mapper)
         {
             _context = context;
             _userService = userService;
-            _imageService = imageService;
+            _s3Service = s3Service;
             _mapper = mapper;
         }
 
@@ -118,7 +118,7 @@ namespace SACA.Controllers
                 return BadRequest();
             }
 
-            await _imageService.RemoveFolderFromCloudinaryAsync(user.Id);
+            await _s3Service.RemoveFolderAsync(user.Id.ToString());
             await _userService.DeleteAsync(user);
 
             await _context.SaveChangesAsync();

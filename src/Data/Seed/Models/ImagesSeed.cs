@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Newtonsoft.Json;
-using SACA.Interfaces;
 using SACA.Entities;
 using SACA.Entities.Requests;
+using SACA.Interfaces;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,13 +14,13 @@ namespace SACA.Data.Seed.Models
 {
     public class ImagesSeed : EntitySeed<Image>
     {
-        private readonly IImageService _imageService;
+        private readonly IS3Service _s3Service;
         private readonly IMapper _mapper;
 
-        public ImagesSeed(ApplicationDbContext context, IImageService imageService, IMapper mapper) : base(context,
+        public ImagesSeed(ApplicationDbContext context, IS3Service s3Service, IMapper mapper) : base(context,
             "SACA.Data.Seed.Json.01Images.json")
         {
-            _imageService = imageService;
+            _s3Service = s3Service;
             _mapper = mapper;
         }
 
@@ -43,8 +43,7 @@ namespace SACA.Data.Seed.Models
                     var imageDto = _mapper.Map<ImageRequest>(image);
                     imageDto.Base64 = image.Url;
 
-                    (image.FullyQualifiedPublicUrl, image.Url) =
-                        await _imageService.UploadToCloudinaryAsync(imageDto);
+                    image.Url = await _s3Service.UploadSharedFileAsync(imageDto.Base64, imageDto.Name);
 
                     await dbSet.AddAsync(image);
                 }

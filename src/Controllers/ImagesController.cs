@@ -4,12 +4,11 @@ using ImageMagick;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SACA.Data;
-using SACA.Extensions;
-using SACA.Interfaces;
 using SACA.Entities;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
-using SACA.Exceptions;
+using SACA.Extensions;
+using SACA.Interfaces;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,12 +19,14 @@ namespace SACA.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
+        private readonly IS3Service _s3Service;
         private readonly IMapper _mapper;
 
-        public ImagesController(ApplicationDbContext context, IImageService imageService, IMapper mapper)
+        public ImagesController(ApplicationDbContext context, IImageService imageService, IS3Service s3Service, IMapper mapper)
         {
             _context = context;
             _imageService = imageService;
+            _s3Service = s3Service;
             _mapper = mapper;
         }
 
@@ -85,7 +86,7 @@ namespace SACA.Controllers
 
             imageRequest.Base64 = magickImage.ToBase64();
 
-            (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageRequest, user.Id);
+            image.Url = await _s3Service.UploadUserFileAsync(imageRequest.Base64, user.Id.ToString());
 
             await _context.Images.AddAsync(image);
 
@@ -113,17 +114,17 @@ namespace SACA.Controllers
                 // throw new ImageNotFoundException("The image was not found");
             }
             var originalImage = await _context.Images.FirstOrDefaultAsync(c => c.Id == id);
-            
+
             if (originalImage is null)
             {
                 return NotFound("The image was not found");
                 // throw new ImageNotFoundException("The image was not found");
             }
-            
+
             var userId = User.GetId();
             var user = await _context.Users.FindAsync(userId);
 
-            await _imageService.RemoveImageFromCloudinaryAsync(originalImage);
+            await _s3Service.RemoveFileAsync(originalImage.Url);
 
             using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
             magickImage.Resize(110, 150);
@@ -133,7 +134,7 @@ namespace SACA.Controllers
             var image = _mapper.Map<Image>(originalImage);
             image.Name = imageRequest.Name;
 
-            (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageRequest, user.Id);
+            image.Url = await _s3Service.UploadUserFileAsync(imageRequest.Base64, user.Id.ToString());
 
             await _context.SaveChangesAsync();
 
@@ -149,7 +150,7 @@ namespace SACA.Controllers
                 return NotFound();
             }
 
-            await _imageService.RemoveImageFromCloudinaryAsync(image);
+            await _s3Service.RemoveFileAsync(image.Url);
 
             _context.Remove(image);
             await _context.SaveChangesAsync();
@@ -165,7 +166,7 @@ namespace SACA.Controllers
             using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
             imageRequest.Base64 = _imageService.Resize(magickImage, 110, 150).ToBase64();
 
-            (image.FullyQualifiedPublicUrl, image.Url) = await _imageService.UploadToCloudinaryAsync(imageRequest);
+            image.Url = await _s3Service.UploadSharedFileAsync(imageRequest.Base64);
 
             await _context.Images.AddAsync(image);
             await _context.SaveChangesAsync();
@@ -182,7 +183,7 @@ namespace SACA.Controllers
                 return NotFound();
             }
 
-            await _imageService.RemoveImageFromCloudinaryAsync(image);
+            await _s3Service.RemoveFileAsync(image.Url);
 
             _context.Remove(image);
             await _context.SaveChangesAsync();
