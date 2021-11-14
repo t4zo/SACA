@@ -10,10 +10,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SACA.Authorization;
 using SACA.Data;
+using SACA.Entities.Identity;
 using SACA.Extensions;
 using SACA.i18n;
 using SACA.Interfaces;
-using SACA.Entities.Identity;
 using SACA.Middlewares;
 using SACA.Options;
 using SACA.Services;
@@ -36,6 +36,7 @@ namespace SACA
             services.AddTransient<IUserService, UserService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddTransient<IImageService, ImageService>();
+            services.AddTransient<IS3Service, S3Service>();
 
             services.AddTransient<ExceptionHandlerMiddleware>();
 
@@ -47,6 +48,7 @@ namespace SACA
             services.AddDbContext<ApplicationDbContext>();
 
             services.AddOptions<AppOptions>().Bind(Configuration.GetSection(nameof(AppOptions)));
+            services.AddOptions<AWSOptions>().Bind(Configuration.GetSection(nameof(AWSOptions)));
             services.AddOptions<CloudinaryOptions>().Bind(Configuration.GetSection(nameof(CloudinaryOptions)));
 
             services.AddJwtSecurity();

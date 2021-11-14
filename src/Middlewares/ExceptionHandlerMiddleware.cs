@@ -16,12 +16,12 @@ namespace SACA.Middlewares
             }
             catch (ImageNotFoundException e)
             {
-                context.Response.StatusCode = (int) HttpStatusCode.NotFound;
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 await context.Response.WriteAsync(e.Message);
             }
             catch (Exception e)
             {
-                context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 await context.Response.WriteAsync(e.Message);
             }
         }

@@ -19,10 +19,10 @@ namespace SACA.Extensions
             await serviceScope.ServiceProvider.CreateUsersAsync();
 
             var mapper = serviceScope.ServiceProvider.GetRequiredService<IMapper>();
-            var imageService = serviceScope.ServiceProvider.GetRequiredService<IImageService>();
+            var s3Service = serviceScope.ServiceProvider.GetRequiredService<IS3Service>();
 
             await new CategoriesSeed(context).LoadAsync();
-            await new ImagesSeed(context, imageService, mapper).LoadAsync();
+            await new ImagesSeed(context, s3Service, mapper).LoadAsync();
 
             return app;
         }
