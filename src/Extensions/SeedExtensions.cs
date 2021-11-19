@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using SACA.Data;
 using SACA.Data.Seed.Models;
 using SACA.Interfaces;
-using System.Threading.Tasks;
 
 namespace SACA.Extensions
 {

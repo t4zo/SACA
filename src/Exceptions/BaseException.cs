@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SACA.Exceptions
+﻿namespace SACA.Exceptions
 {
     public class BaseException : Exception
     {

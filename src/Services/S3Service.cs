@@ -2,14 +2,10 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SACA.Extensions;
 using SACA.Interfaces;
 using SACA.Options;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace SACA.Services
 {

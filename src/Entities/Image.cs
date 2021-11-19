@@ -3,8 +3,16 @@ using System.Text.Json.Serialization;
 
 namespace SACA.Entities
 {
-    public class Image : BaseEntity
+    public class Image : IEntity
     {
+        //public Image()
+        //{
+        //    Category = new Category();
+        //    User = new ApplicationUser();
+        //}
+
+        public int Id { get; set; }
+
         public int CategoryId { get; set; }
 
         [JsonIgnore]
@@ -15,6 +23,5 @@ namespace SACA.Entities
 
         public string Name { get; set; }
         public string Url { get; set; }
-        public string FullyQualifiedPublicUrl { get; set; }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace SACA.Options
+﻿namespace SACA.Options
 {
     public class UserOptions
     {

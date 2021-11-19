@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
-using System;
-using System.Threading.Tasks;
 using static SACA.Constants.AuthorizationConstants;
 
 namespace SACA.Authorization

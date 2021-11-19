@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using SACA.Exceptions;
-using System;
+﻿using SACA.Exceptions;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace SACA.Middlewares
 {

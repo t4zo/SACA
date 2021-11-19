@@ -2,8 +2,6 @@
 using SACA.Entities.Identity;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SACA.Interfaces
 {

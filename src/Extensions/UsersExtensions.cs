@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SACA.Data;
 using SACA.Entities.Identity;
 using SACA.Options;
-using System;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using static SACA.Constants.AuthorizationConstants;
 
 namespace SACA.Extensions

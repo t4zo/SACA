@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace SACA.Interfaces
+﻿namespace SACA.Interfaces
 {
     public interface IS3Service
     {

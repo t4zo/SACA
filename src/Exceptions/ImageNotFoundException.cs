@@ -1,6 +1,4 @@
-﻿// unset
-
-namespace SACA.Exceptions
+﻿namespace SACA.Exceptions
 {
     public class ImageNotFoundException : BaseException
     {

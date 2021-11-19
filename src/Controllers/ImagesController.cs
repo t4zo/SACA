@@ -9,9 +9,6 @@ using SACA.Entities.Requests;
 using SACA.Entities.Responses;
 using SACA.Extensions;
 using SACA.Interfaces;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SACA.Controllers
 {

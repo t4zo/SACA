@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using SACA.Data;
 using SACA.Entities;
 using SACA.Extensions;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SACA.Controllers
 {
@@ -49,7 +46,6 @@ namespace SACA.Controllers
                         CategoryId = i.CategoryId,
                         UserId = i.UserId,
                         Url = i.Url,
-                        FullyQualifiedPublicUrl = i.FullyQualifiedPublicUrl
                     }).ToList()
                 })
                 .ToListAsync();
@@ -78,7 +74,6 @@ namespace SACA.Controllers
                         CategoryId = i.CategoryId,
                         UserId = i.UserId,
                         Url = i.Url,
-                        FullyQualifiedPublicUrl = i.FullyQualifiedPublicUrl
                     }).ToList()
                 })
                 .FirstOrDefaultAsync();

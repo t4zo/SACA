@@ -1,16 +1,11 @@
-﻿using SACA.Entities;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace SACA.Data.Seed
 {
-    public class EntitySeed<TEntity> : IEntitySeed where TEntity : BaseEntity
+    public class EntitySeed<TEntity> : IEntitySeed where TEntity : class
     {
         protected readonly ApplicationDbContext _context;
 

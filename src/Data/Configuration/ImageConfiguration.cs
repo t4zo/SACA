@@ -28,6 +28,14 @@ namespace SACA.Data.Configuration
                 .HasForeignKey(image => image.UserId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(x => x.Name)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            builder.Property(x => x.Url)
+                .HasMaxLength(150)
+                .IsRequired();
         }
     }
 }

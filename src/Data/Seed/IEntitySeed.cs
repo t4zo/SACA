@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace SACA.Data.Seed
+﻿namespace SACA.Data.Seed
 {
     public interface IEntitySeed
     {

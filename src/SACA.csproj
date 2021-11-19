@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <UserSecretsId>424c1686-51e4-4378-afbb-b0a407b88cd8</UserSecretsId>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Data\Seed\Json\00Categories.json" />

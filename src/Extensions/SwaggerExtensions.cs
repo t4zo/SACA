@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 
@@ -10,16 +8,16 @@ namespace SACA.Extensions
     {
         public static IServiceCollection AddSwagger(this IServiceCollection services)
         {
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
+                options.SwaggerDoc("v2", new OpenApiInfo
                 {
-                    Version = "v1",
+                    Version = "v2",
                     Title = "SAED API",
-                    Description = "Endpoints to v1 SAED API"
+                    Description = "Endpoints to v2 SACA API"
                 });
 
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
                     Name = HeaderNames.Authorization,
@@ -32,17 +30,17 @@ namespace SACA.Extensions
             return services;
         }
 
-        public static IApplicationBuilder UseConfiguredSwagger(this IApplicationBuilder app)
+        public static IApplicationBuilder UseCustomSwagger(this IApplicationBuilder app)
         {
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
             app.UseSwagger();
-            app.UseSwaggerUI(c =>
+            app.UseSwaggerUI(options =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "SAED API V1");
+                options.SwaggerEndpoint("/swagger/v2/swagger.json", "SACA API V2");
 
                 // Open Swagger UI on root url
-                c.RoutePrefix = "saca/swagger";
+                options.RoutePrefix = "swagger";
             });
 
             return app;
