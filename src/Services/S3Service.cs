@@ -13,8 +13,9 @@ namespace SACA.Services
     {
         private readonly ILogger _logger;
         private readonly RegionEndpoint _bucketRegion;
-        private IAmazonS3 _s3Client;
+        private readonly IAmazonS3 _s3Client;
         private readonly AWSOptions _awsOptions;
+        private readonly bool _isProduction;
 
         public S3Service(ILogger<S3Service> logger, IOptionsSnapshot<AWSOptions> awsOptions)
         {
@@ -27,18 +28,18 @@ namespace SACA.Services
 
             _awsOptions = awsOptions.Value;
             _s3Client = new AmazonS3Client(_bucketRegion);
+            _isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production";
         }
 
         public async Task<string> UploadSharedFileAsync(string base64Url)
         {
             try
             {
-                var normalizedKey = $"shared/{Guid.NewGuid()}";
+                var normalizedKey = $"{(_isProduction ? string.Empty : "dev/")}shared/{Guid.NewGuid()}";
 
-                using var stream = new MemoryStream();
-                var bytes = Convert.FromBase64String(base64Url);
-                stream.Write(bytes);
+                var stream = GetBase64Stream(base64Url);
 
+                // Multipart Upload
                 var fileTransferUtility = new TransferUtility(_s3Client);
                 await fileTransferUtility.UploadAsync(stream, _awsOptions.S3.BucketName, normalizedKey);
 
@@ -61,14 +62,17 @@ namespace SACA.Services
         {
             try
             {
-                var normalizedKey = $"shared/{keyName.Replace(" ", "-").ToLower().RemoveAccent()}";
+                var normalizedKey = $"{(_isProduction ? string.Empty : "dev/")}shared/{keyName.Replace(" ", "-").ToLower().RemoveAccent()}";
 
-                using var stream = new MemoryStream();
-                var bytes = Convert.FromBase64String(base64Url);
-                stream.Write(bytes);
+                var stream = GetBase64Stream(base64Url);
 
-                var fileTransferUtility = new TransferUtility(_s3Client);
-                await fileTransferUtility.UploadAsync(stream, _awsOptions.S3.BucketName, normalizedKey);
+                var response = await _s3Client.PutObjectAsync(new PutObjectRequest
+                {
+                    InputStream = stream,
+                    Key = normalizedKey,
+                    BucketName = _awsOptions.S3.BucketName,
+                    ContentType = "image/jpeg",
+                });
 
                 return $"https://{_awsOptions.S3.BucketName}.s3.amazonaws.com/{normalizedKey}";
 
@@ -89,11 +93,9 @@ namespace SACA.Services
         {
             try
             {
-                var normalizedKey = $"users/{keyName}/{Guid.NewGuid()}";
+                var normalizedKey = $"{(_isProduction ? string.Empty : "dev/")}users/{keyName}/{Guid.NewGuid()}";
 
-                using var stream = new MemoryStream();
-                var bytes = Convert.FromBase64String(base64Url);
-                stream.Write(bytes);
+                using var stream = GetBase64Stream(base64Url);
 
                 var fileTransferUtility = new TransferUtility(_s3Client);
                 await fileTransferUtility.UploadAsync(stream, _awsOptions.S3.BucketName, normalizedKey);
@@ -168,6 +170,14 @@ namespace SACA.Services
             {
                 _logger.LogError("Unknown encountered on server. Message:'{0}' when deleting an object", e.Message);
             }
+        }
+
+        private static MemoryStream GetBase64Stream(string base64Url)
+        {
+            var stream = new MemoryStream();
+            var bytes = Convert.FromBase64String(base64Url);
+            stream.Write(bytes);
+            return stream;
         }
     }
 }

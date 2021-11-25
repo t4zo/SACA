@@ -7,6 +7,8 @@ using SACA.Extensions;
 using SACA.Interfaces;
 using SACA.Middlewares;
 using SACA.Options;
+using SACA.Repositories;
+using SACA.Repositories.Interfaces;
 using SACA.Services;
 using System.Reflection;
 
@@ -23,6 +25,11 @@ namespace SACA
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<IImageRepository, ImageRepository>();
+            services.AddTransient<ICategoryRepository, CategoryRepository>();
+            services.AddTransient<IUserRepository, UserRepository>();
+            services.AddTransient<IUnityOfWork, UnityOfWork>();
+
             services.AddTransient<IUserService, UserService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddTransient<IImageService, ImageService>();

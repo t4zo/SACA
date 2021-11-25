@@ -1,43 +1,41 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using ImageMagick;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SACA.Data;
 using SACA.Entities;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
 using SACA.Extensions;
 using SACA.Interfaces;
+using SACA.Repositories.Interfaces;
 
 namespace SACA.Controllers
 {
     public class ImagesController : BaseApiController
     {
-        private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
         private readonly IS3Service _s3Service;
         private readonly IMapper _mapper;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IImageRepository _imageRespository;
+        private readonly IUserRepository _userRepository;
+        private readonly IUnityOfWork _uow;
 
-        public ImagesController(ApplicationDbContext context, IImageService imageService, IS3Service s3Service, IMapper mapper)
+        public ImagesController(IImageService imageService, IS3Service s3Service, IMapper mapper, ICategoryRepository categoryRepository, IImageRepository imageRespository, IUserRepository userRepository, IUnityOfWork uow)
         {
-            _context = context;
             _imageService = imageService;
             _s3Service = s3Service;
             _mapper = mapper;
+            _categoryRepository = categoryRepository;
+            _imageRespository = imageRespository;
+            _userRepository = userRepository;
+            _uow = uow;
         }
 
         [HttpGet]
         public async Task<ActionResult<ImageResponse>> Get()
         {
             var userId = User.GetId();
-
-            var imageResponse = await _context.Images
-                .AsNoTracking()
-                .Include(x => x.User.Id == userId)
-                .Where(x => x.UserId == userId)
-                .ProjectTo<ImageResponse>(_mapper.ConfigurationProvider)
-                .FirstOrDefaultAsync();
+            var imageResponse = await _imageRespository.GetUserImageAsync(userId.Value);
 
             if (imageResponse is null)
             {
@@ -51,13 +49,7 @@ namespace SACA.Controllers
         public async Task<ActionResult<ImageResponse>> Get(int id)
         {
             var userId = User.GetId();
-
-            var imageResponse = await _context.Images
-                .Include(x => x.User)
-                .AsNoTracking()
-                .Where(x => x.Id == id && x.UserId == userId)
-                .ProjectTo<ImageResponse>(_mapper.ConfigurationProvider)
-                .FirstOrDefaultAsync();
+            var imageResponse = await _imageRespository.GetUserImageAsync(userId.Value, id);
 
             if (imageResponse is null)
             {
@@ -74,9 +66,7 @@ namespace SACA.Controllers
 
             image.UserId = User.GetId();
 
-            var user = await _context.Users
-                .Include(x => x.Categories)
-                .FirstOrDefaultAsync(x => x.Id == image.UserId);
+            var user = await _userRepository.GetUserCategoryAsync(image.UserId.Value);
 
             using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
             magickImage.Resize(110, 150);
@@ -85,11 +75,9 @@ namespace SACA.Controllers
 
             image.Url = await _s3Service.UploadUserFileAsync(imageRequest.Base64, user.Id.ToString());
 
-            await _context.Images.AddAsync(image);
+            await _imageRespository.AddAsync(image);
 
-            var category = await _context.Categories
-                .Include(x => x.ApplicationUsers)
-                .FirstOrDefaultAsync(x => x.Id == image.CategoryId);
+            var category = await _categoryRepository.GetCategoryUserAsync(image.CategoryId);
 
             var userCategoryExists = user.Categories.Any(x => x.Id == category.Id);
             if (!userCategoryExists)
@@ -97,7 +85,7 @@ namespace SACA.Controllers
                 category.ApplicationUsers.Add(user);
             }
 
-            await _context.SaveChangesAsync();
+            await _uow.SaveChangesAsync();
 
             return Ok(_mapper.Map<ImageResponse>(image));
         }
@@ -110,7 +98,7 @@ namespace SACA.Controllers
                 return NotFound("The image was not found");
                 // throw new ImageNotFoundException("The image was not found");
             }
-            var originalImage = await _context.Images.FirstOrDefaultAsync(c => c.Id == id);
+            var originalImage = await _imageRespository.GetAsync(id);
 
             if (originalImage is null)
             {
@@ -119,7 +107,7 @@ namespace SACA.Controllers
             }
 
             var userId = User.GetId();
-            var user = await _context.Users.FindAsync(userId);
+            var user = await _userRepository.GetUserAsync(userId.Value);
 
             await _s3Service.RemoveFileAsync(originalImage.Url);
 
@@ -133,7 +121,7 @@ namespace SACA.Controllers
 
             image.Url = await _s3Service.UploadUserFileAsync(imageRequest.Base64, user.Id.ToString());
 
-            await _context.SaveChangesAsync();
+            await _uow.SaveChangesAsync();
 
             return Ok(_mapper.Map<ImageResponse>(image));
         }
@@ -141,7 +129,7 @@ namespace SACA.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ImageResponse>> Remove(int id)
         {
-            var image = await _context.Images.FindAsync(id);
+            var image = await _imageRespository.GetAsync(id);
             if (image is null)
             {
                 return NotFound();
@@ -149,8 +137,8 @@ namespace SACA.Controllers
 
             await _s3Service.RemoveFileAsync(image.Url);
 
-            _context.Remove(image);
-            await _context.SaveChangesAsync();
+            _imageRespository.Remove(image);
+            await _uow.SaveChangesAsync();
 
             return Ok(_mapper.Map<ImageResponse>(image));
         }
@@ -165,8 +153,8 @@ namespace SACA.Controllers
 
             image.Url = await _s3Service.UploadSharedFileAsync(imageRequest.Base64);
 
-            await _context.Images.AddAsync(image);
-            await _context.SaveChangesAsync();
+            await _imageRespository.AddAsync(image);
+            await _uow.SaveChangesAsync();
 
             return Ok(_mapper.Map<ImageResponse>(image));
         }
@@ -174,7 +162,7 @@ namespace SACA.Controllers
         [HttpDelete("superuser/{id}")]
         public async Task<ActionResult<ImageResponse>> RemoveAdmin(int id)
         {
-            var image = await _context.Images.FindAsync(id);
+            var image = await _imageRespository.GetAsync(id);
             if (image is null)
             {
                 return NotFound();
@@ -182,8 +170,8 @@ namespace SACA.Controllers
 
             await _s3Service.RemoveFileAsync(image.Url);
 
-            _context.Remove(image);
-            await _context.SaveChangesAsync();
+            _imageRespository.Remove(image);
+            await _uow.SaveChangesAsync();
 
             return Ok(_mapper.Map<ImageResponse>(image));
         }
