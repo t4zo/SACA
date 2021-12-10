@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SACA.Constants;
-using SACA.Entities.Identity;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
+using SACA.Extensions;
 using SACA.Interfaces;
 using SACA.Repositories.Interfaces;
 
@@ -37,84 +36,52 @@ namespace SACA.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("signIn")]
+        [HttpPost("signin")]
         public async Task<ActionResult<UserResponse>> SignIn(SignInRequest signInRequest)
         {
-            UserResponse userResponse;
-
             try
             {
-                userResponse = await _userService.LogInAsync(signInRequest.Email, signInRequest.Password, signInRequest.Remember);
+                return await _userService.LogInAsync(signInRequest.Email, signInRequest.Password, signInRequest.Remember);
             }
             catch (ArgumentException argumentException)
             {
                 return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = argumentException.Message });
             }
-
-            return userResponse;
         }
 
         [AllowAnonymous]
-        [HttpPost("signUp")]
+        [HttpPost("signup")]
         public async Task<ActionResult<UserResponse>> Create(SignUpRequest signUpRequest)
         {
-            UserResponse userResponse;
-
             try
             {
                 var applicationUser = await _userService.SignUpAsync(signUpRequest);
                 await _userService.AssignRolesAsync(applicationUser, signUpRequest.Roles);
-                userResponse = await _userService.LogInAsync(signUpRequest.Email, signUpRequest.Password);
+                var userResponse = await _userService.LogInAsync(signUpRequest.Email, signUpRequest.Password);
+
+                var user = await _userRepository.GetUserAsync(userResponse.Id);
+                user.Categories = await _categoryRepository.GetCommonCategoriesAsync();
+
+                await _uow.SaveChangesAsync();
+
+                return userResponse;
             }
             catch (ArgumentException argumentException)
             {
                 return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = argumentException.Message });
             }
-
-            var user = await _userRepository.GetUserAsync(userResponse.Id);
-            user.Categories = await _categoryRepository.GetCommonCategoriesAsync();
-
-            await _uow.SaveChangesAsync();
-
-            return userResponse;
         }
 
-        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
-        [HttpGet]
-        public async Task<ActionResult<List<UserResponse>>> GetAll()
+        [HttpDelete("user")]
+        public async Task<ActionResult<UserResponse>> Remove()
         {
-            var usersResponses = await _userRepository.GetUsersAsync();
-
-            foreach (var userResponse in usersResponses)
-            {
-                var user = _mapper.Map<ApplicationUser>(userResponse);
-                userResponse.Roles = await _userService.GetRolesAsync(user);
-            }
-
-            return usersResponses;
-        }
-
-        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
-        [HttpGet("{id}")]
-        public async Task<ActionResult<UserResponse>> Get(int id)
-        {
-            var user = await _userRepository.GetUserAsync(id);
-            if (user is null)
+            var userId = User.GetId();
+            if (!userId.HasValue)
             {
                 return BadRequest();
             }
 
-            var userResponse = _mapper.Map<UserResponse>(user);
-            userResponse.Roles = await _userService.GetRolesAsync(user);
-
-            return userResponse;
-        }
-
-        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<UserResponse>> Remove(int id)
-        {
-            var user = await _userRepository.GetUserAsync(id);
+            var user = await _userRepository.GetUserAsync(userId.Value);
             if (user is null)
             {
                 return BadRequest();
