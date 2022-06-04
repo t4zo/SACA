@@ -31,7 +31,7 @@ jobs:
     
     environment: 
       name: Development
-      url: 'https://saca.t4zo.com/v2/categories'
+      url: 'https://saca.t4zo.com/health'
 
     steps:
       - name: Configure AWS credentials
@@ -46,7 +46,7 @@ jobs:
         run: |
           aws deploy create-deployment \
             --application-name saca \
-            --deployment-group-name saca-development \
+            --deployment-group-name saca-dev \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
             --github-location repository=${{ github.repository }},commitId=${{ github.sha }} \
             --file-exists-behavior=OVERWRITE \
