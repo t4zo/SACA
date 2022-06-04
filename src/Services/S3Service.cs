@@ -1,4 +1,5 @@
 ﻿using Amazon;
+using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
@@ -27,7 +28,7 @@ namespace SACA.Services
             };
 
             _awsOptions = awsOptions.Value;
-            _s3Client = new AmazonS3Client(_bucketRegion);
+            _s3Client = new AmazonS3Client(new BasicAWSCredentials(_awsOptions.AwsAccessKeyId, _awsOptions.AwsSecretAccessKey), _bucketRegion);
             _isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production";
         }
 
