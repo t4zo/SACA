@@ -17,7 +17,6 @@
     },
     "Kestrel": {
       "commandName": "Project",
-      "applicationUrl": "http://localhost:5800",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -27,7 +26,6 @@
       "workingDirectory": "$(ProjectDir)",
       "executablePath": "dotnet.exe",
       "commandLineArgs": "watch run",
-      "applicationUrl": "http://localhost:5800",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
