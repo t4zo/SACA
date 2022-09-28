@@ -1,6 +1,4 @@
-using Microsoft.EntityFrameworkCore;
 using SACA.Data;
-using System.Net;
 
 namespace SACA
 {
@@ -30,16 +28,7 @@ namespace SACA
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             return Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    //webBuilder.UseSentry();
-                    webBuilder.UseKestrel(options =>
-                    {
-                        options.Listen(IPAddress.Any, 5800);
-                    });
-
-                    webBuilder.UseStartup<Startup>();
-                });
+                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
         }
     }
 }

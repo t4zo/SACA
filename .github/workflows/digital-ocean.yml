@@ -2,61 +2,41 @@ name: Digital Ocean
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   hello-world:
     runs-on: ubuntu-latest
 
     steps:
-      # Runs a single command using the runners shell
       - name: Run a one-line script
         run: echo Hello, world!
 
+# deploy:
+#   runs-on: ubuntu-latest
+#   needs: build
 
-#   ci:
-#     runs-on: ubuntu-latest
+#   steps:
+#     - uses: actions/checkout@v2
 
-#     steps:
-#       - uses: actions/checkout@v2
-
-#       - name: Setup .NET Core
-#         uses: actions/setup-dotnet@v1
-#         with:
-#           dotnet-version: 6.0.x
-
-#       - name: Restore
-#         run: dotnet restore
-      
-#       - name: Build
-#         run: dotnet build --configuration Release --no-restore
-
-#   # cd:
-#   #   runs-on: ubuntu-latest
-#   #   needs: ci
-
-#   #   steps:
-#   #     - uses: actions/checkout@v2
-      
-#   #     - name: Deploy to droplet using SSH
-#   #       uses: appleboy/ssh-action@master
-#   #       with:
-#   #         host: ${{ secrets.DO_HOST }}
-#   #         username: ${{ secrets.DO_USERNAME }}
-#   #         password: ${{ secrets.DO_PASSWORD }}
-#   #         # key: ${{ secrets.DO_PRIVATE_KEY }}
-#   #         debug: true
-#   #         script: |
-#   #           logname
-#   #           sudo systemctl stop saca
-#   #           export AppOptions__Token__SecurityKey=${{ secrets.APPOPTIONS__TOKEN__SECURITYKEY }}
-#   #           export CloudinaryOptions__ApiEnvironmentVariable=${{ secrets.CLOUDINARYOPTIONS__APIENVIRONMENTVARIABLE }}
-#   #           cd ${{ secrets.DO_DOCROOT }}
-#   #           git pull
-#   #           dotnet build --configuration Release
-#   #           dotnet publish --configuration Release --no-build
-#   #           dotnet-ef database update
-#   #           sudo systemctl start saca
-      
+#     - name: Deploy to droplet using SSH
+#       uses: appleboy/ssh-action@master
+#       with:
+#         host: ${{ secrets.DO_HOST }}
+#         username: ${{ secrets.DO_USERNAME }}
+#         password: ${{ secrets.DO_PASSWORD }}
+#         # key: ${{ secrets.DO_PRIVATE_KEY }}
+#         debug: true
+#         script: |
+#           logname
+#           sudo systemctl stop saca
+#           export AppOptions__Token__SecurityKey=${{ secrets.APPOPTIONS__TOKEN__SECURITYKEY }}
+#           export CloudinaryOptions__ApiEnvironmentVariable=${{ secrets.CLOUDINARYOPTIONS__APIENVIRONMENTVARIABLE }}
+#           cd ${{ secrets.DO_DOCROOT }}
+#           git pull
+#           dotnet build --configuration Release
+#           dotnet publish --configuration Release --no-build
+#           dotnet-ef database update
+#           sudo systemctl start saca
