@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SACA.Data;
 
 namespace SACA
@@ -13,7 +14,7 @@ namespace SACA
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 #if !DEBUG
-                    context.Database.Migrate();
+                context.Database.Migrate();
 #endif
             }
             catch (Exception ex)

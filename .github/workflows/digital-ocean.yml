@@ -36,7 +36,7 @@ jobs:
 #           export CloudinaryOptions__ApiEnvironmentVariable=${{ secrets.CLOUDINARYOPTIONS__APIENVIRONMENTVARIABLE }}
 #           cd ${{ secrets.DO_DOCROOT }}
 #           git pull
-#           dotnet build --configuration Release
-#           dotnet publish --configuration Release --no-build
+#           dotnet build -c Release
+#           dotnet publish -c Release
 #           dotnet-ef database update
 #           sudo systemctl start saca

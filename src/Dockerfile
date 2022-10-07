@@ -11,10 +11,10 @@ COPY *.csproj ./
 RUN dotnet restore
 
 COPY . .
-RUN dotnet build --no-restore -o /app
+RUN dotnet build -c Release --no-restore -o /app
 
 FROM build AS publish
-RUN dotnet publish -o /app
+RUN dotnet publish -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-jammy-arm64v8
 WORKDIR /app
