@@ -22,6 +22,13 @@ namespace SACA.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            
+            var entities = builder.Model.GetEntityTypes();
+
+            foreach (var entity in entities)
+            {
+                entity.FindProperty("Id")?.SetIdentityStartValue(1000);
+            }
 
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }

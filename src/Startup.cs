@@ -79,6 +79,8 @@ namespace SACA
                 app.UseDeveloperExceptionPage();
                 app.UseMigrationsEndPoint();
             }
+            
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             app.UseProblemDetails();
 

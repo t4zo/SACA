@@ -14,6 +14,8 @@ namespace SACA
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 #if !DEBUG
+                AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
                 context.Database.Migrate();
 #endif
             }
