@@ -63,6 +63,8 @@ namespace SACA
             services.AddRouting(options => options.LowercaseUrls = true);
 
             services.AddDatabaseDeveloperPageExceptionFilter();
+            
+            services.AddHttpContextAccessor();
 
             services.AddControllers()
                 .AddFluentValidation(configureExpression =>
