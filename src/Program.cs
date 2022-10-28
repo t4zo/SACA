@@ -49,8 +49,6 @@ builder.Services.AddOptions<CloudinaryOptions>().Bind(builder.Configuration.GetS
 
 builder.Services.AddJwtSecurity();
 
-builder.Services.AddDbContext<ApplicationDbContext>();
-
 builder.Services.AddProblemDetails(configure => { configure.IncludeExceptionDetails = (ctx, exp) => true; });
 
 builder.Services.AddHealthChecks();

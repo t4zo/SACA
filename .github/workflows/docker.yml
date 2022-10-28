@@ -2,14 +2,20 @@ name: Docker
 
 on:
   workflow_run:
-    workflows: ["build"]
-    branches: [main]
+    workflows: 
+      - build
+    branches: 
+      - main
     types:
       - completed
+
   push:
-    branches: [main]
+    branches: 
+      - main
+
   pull_request:
-    branches: [main]
+    branches: 
+      - main
 
 jobs:
   push:

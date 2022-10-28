@@ -2,14 +2,20 @@ name: Amazon ECS
 
 on:
   workflow_run:
-    workflows: ["docker"]
-    branches: [main]
+    workflows: 
+      - docker
+    branches: 
+      - main
     types:
       - completed
+
   push:
-    branches: [main]
+    branches: 
+      - main
+
   pull_request:
-    branches: [main]
+    branches: 
+      - main
 
 jobs:
   deploy:

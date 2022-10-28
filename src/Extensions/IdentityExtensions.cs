@@ -9,7 +9,7 @@ namespace SACA.Extensions
     {
         public static IServiceCollection AddIdentityCoreConfiguration(this IServiceCollection services)
         {
-            var identityBuilder = services.AddIdentityCore<ApplicationUser>(options =>
+            var identityBuilder = services.AddDefaultIdentity<ApplicationUser>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
@@ -27,7 +27,8 @@ namespace SACA.Extensions
                 options.User.RequireUniqueEmail = true;
             });
 
-            identityBuilder.AddSignInManager()
+            identityBuilder
+                .AddSignInManager()
                 .AddRoles<ApplicationRole>()
                 .AddErrorDescriber<PortugueseIdentityErrorDescriber>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()

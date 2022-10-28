@@ -2,9 +2,12 @@ name: Build
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - main
+
   pull_request:
-    branches: [main]
+    branches: 
+      - main
 
 jobs:
   build:
@@ -17,6 +20,14 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
       - name: Restore API
         run: dotnet restore

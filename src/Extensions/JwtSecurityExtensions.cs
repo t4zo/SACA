@@ -39,7 +39,8 @@ namespace SACA.Extensions
                         // Validate the token expiry
                         ValidateLifetime = true
                     };
-                }).AddCookie(IdentityConstants.ApplicationScheme);
+                });
+                //.AddCookie(IdentityConstants.ApplicationScheme);
 
             return services;
         }
