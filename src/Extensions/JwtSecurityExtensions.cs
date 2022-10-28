@@ -40,7 +40,6 @@ namespace SACA.Extensions
                         ValidateLifetime = true
                     };
                 });
-                //.AddCookie(IdentityConstants.ApplicationScheme);
 
             return services;
         }
