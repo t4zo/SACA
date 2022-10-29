@@ -1,13 +1,13 @@
 name: Docker
 
 on:
-  workflow_run:
-    workflows: 
-      - build
-    branches: 
-      - main
-    types:
-      - completed
+  # workflow_run:
+  #   workflows: 
+  #     - build
+  #   branches: 
+  #     - main
+  #   types:
+  #     - completed
 
   push:
     branches: 
@@ -18,24 +18,36 @@ on:
       - main
 
 jobs:
-  push:
+  hello-world:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
-    environment:
-      name: Development
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Run a one-line script
+        run: echo Hello, world!
 
-      - name: Build
-        run: docker build -f src/Dockerfile -t ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.DOCKERHUB__IMAGE_TAG}} ./src
+  # push:
+  #   runs-on: ubuntu-latest
+  #   if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
-      - name: Login DockerHub
-        run: echo "${{secrets.DOCKERHUB_ACCESS_TOKEN}}" | docker login -u ${{secrets.DOCKERHUB_USERNAME}} --password-stdin
+  #   environment:
+  #     name: Development
 
-      - name: Push
-        run: docker push ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.DOCKERHUB__IMAGE_TAG}}
+  #   env:
+  #     DOCKERHUB_USER_IMAGE_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB__IMAGE_TAG }}
+  #     GITHUB_USER_IMAGE_TAG: ${{ github.repository_owner }}/${{ secrets.DOCKERHUB__IMAGE_TAG }}
+
+  #   steps:
+  #     - uses: actions/checkout@v3
+
+  #     - name: Build
+  #       run: docker build -f src/Dockerfile -t ${{ env.GITHUB_USER_IMAGE_TAG }} ./src
+
+  #     - name: Login DockerHub
+  #       run: echo "${{ secrets.DOCKERHUB_ACCESS_TOKEN }}" | docker login -u ${{ github.repository_owner }} --password-stdin
+
+  #     - name: Push
+  #       run: docker push ${{ env.GITHUB_USER_IMAGE_TAG }}
+        
 
 # buildx failed with: ERROR: failed to solve: failed to read dockerfile: open /tmp/buildkit-mount3174352312/Dockerfile: no such file or directory
   # push:
