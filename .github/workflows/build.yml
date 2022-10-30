@@ -10,35 +10,28 @@ on: workflow_dispatch
 #     branches: 
 #       - main
 
-jobs:
-  hello-world:
+jobs:        
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Run a one-line script
-        run: echo Hello, world!
-        
-  # build:
-  #   runs-on: ubuntu-latest
+      - uses: actions/checkout@v3
 
-  #   steps:
-  #     - uses: actions/checkout@v3
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
 
-  #     - name: Setup .NET Core
-  #       uses: actions/setup-dotnet@v1
-  #       with:
-  #         dotnet-version: 6.0.x
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-  #     - name: Cache Dependencies
-  #       uses: actions/cache@v3
-  #       with:
-  #         path: ~/.nuget/packages
-  #         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-nuget-
+      - name: Restore API
+        run: dotnet restore
 
-  #     - name: Restore API
-  #       run: dotnet restore
-
-  #     - name: Build API
-  #       run: dotnet build -c Release --no-restore
+      - name: Build API
+        run: dotnet build -c Release --no-restore
