@@ -26,8 +26,9 @@
 
 name: AWS
 
-on: workflow_dispatch
-# on:
+on: 
+  workflow_dispatch:
+
 #   push:
 #     branches: 
 #       - main
@@ -46,15 +47,15 @@ env:
   CONTAINER_NAME: saca                    # set this to the name of the container in the
                                             # containerDefinitions section of your task definition
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     environment: production
+
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
     - name: Checkout

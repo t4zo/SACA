@@ -1,7 +1,8 @@
 name: Docker
 
-on: workflow_dispatch
-# on:
+on: 
+  workflow_dispatch:
+
 #   push:
 #     branches: 
 #       - main
@@ -19,8 +20,8 @@ jobs:
       name: Development
 
     env:
-      DOCKERHUB_USER_IMAGE_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB__IMAGE_TAG }}
-      GITHUB_USER_IMAGE_TAG: ${{ github.repository_owner }}/${{ secrets.DOCKERHUB__IMAGE_TAG }}
+      DOCKERHUB_USER_IMAGE_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_WITH_TAG }}
+      GITHUB_USER_IMAGE_TAG: ${{ github.repository_owner }}/${{ secrets.DOCKERHUB_IMAGE_WITH_TAG }}
 
     steps:
       - uses: actions/checkout@v3
