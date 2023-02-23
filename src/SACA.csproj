@@ -16,7 +16,7 @@
     <PackageReference Include="FluentValidation" Version="10.3.4" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="10.3.4" />
     <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="6.2.0" />
-    <PackageReference Include="Magick.NET-Q16-arm64" Version="12.2.0" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
