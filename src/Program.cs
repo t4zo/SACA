@@ -2,7 +2,6 @@ using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using SACA;
 using SACA.Authorization;
 using SACA.Data;
 using SACA.Extensions;
@@ -49,7 +48,7 @@ builder.Services.AddOptions<CloudinaryOptions>().Bind(builder.Configuration.GetS
 
 builder.Services.AddJwtSecurity();
 
-builder.Services.AddProblemDetails(configure => { configure.IncludeExceptionDetails = (ctx, exp) => true; });
+builder.Services.AddProblemDetails(configure => { configure.IncludeExceptionDetails = (_, _) => true; });
 
 builder.Services.AddHealthChecks();
 
@@ -58,7 +57,7 @@ builder.Services.AddSwagger();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-            
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllers()

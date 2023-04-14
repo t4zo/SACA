@@ -1,4 +1,4 @@
-﻿namespace SACA.Entities
+﻿namespace SACA.Interfaces
 {
     public interface IBaseEntity<TKey> where TKey : IEquatable<TKey>
     {

@@ -6,12 +6,12 @@ namespace SACA.i18n
     {
         public override IdentityError DefaultError()
         {
-            return new() { Code = nameof(DefaultError), Description = "Um erro desconhecido ocorreu." };
+            return new IdentityError { Code = nameof(DefaultError), Description = "Um erro desconhecido ocorreu." };
         }
 
         public override IdentityError ConcurrencyFailure()
         {
-            return new()
+            return new IdentityError
             {
                 Code = nameof(ConcurrencyFailure),
                 Description = "Falha de concorrência otimista, o objeto foi modificado."
@@ -20,22 +20,22 @@ namespace SACA.i18n
 
         public override IdentityError PasswordMismatch()
         {
-            return new() { Code = nameof(PasswordMismatch), Description = "Senha incorreta." };
+            return new IdentityError { Code = nameof(PasswordMismatch), Description = "Senha incorreta." };
         }
 
         public override IdentityError InvalidToken()
         {
-            return new() { Code = nameof(InvalidToken), Description = "Token inválido." };
+            return new IdentityError { Code = nameof(InvalidToken), Description = "Token inválido." };
         }
 
         public override IdentityError LoginAlreadyAssociated()
         {
-            return new() { Code = nameof(LoginAlreadyAssociated), Description = "Já existe um usuário com este login." };
+            return new IdentityError { Code = nameof(LoginAlreadyAssociated), Description = "Já existe um usuário com este login." };
         }
 
         public override IdentityError InvalidUserName(string userName)
         {
-            return new()
+            return new IdentityError
             {
                 Code = nameof(InvalidUserName),
                 Description = $"Login '{userName}' é inválido, pode conter apenas letras ou dígitos."
@@ -44,57 +44,57 @@ namespace SACA.i18n
 
         public override IdentityError InvalidEmail(string email)
         {
-            return new() { Code = nameof(InvalidEmail), Description = $"Email '{email}' é inválido." };
+            return new IdentityError { Code = nameof(InvalidEmail), Description = $"Email '{email}' é inválido." };
         }
 
         public override IdentityError DuplicateUserName(string userName)
         {
-            return new() { Code = nameof(DuplicateUserName), Description = $"Login '{userName}' já está sendo utilizado." };
+            return new IdentityError { Code = nameof(DuplicateUserName), Description = $"Login '{userName}' já está sendo utilizado." };
         }
 
         public override IdentityError DuplicateEmail(string email)
         {
-            return new() { Code = nameof(DuplicateEmail), Description = $"Email '{email}' já está sendo utilizado." };
+            return new IdentityError { Code = nameof(DuplicateEmail), Description = $"Email '{email}' já está sendo utilizado." };
         }
 
         public override IdentityError InvalidRoleName(string role)
         {
-            return new() { Code = nameof(InvalidRoleName), Description = $"A permissão '{role}' é inválida." };
+            return new IdentityError { Code = nameof(InvalidRoleName), Description = $"A permissão '{role}' é inválida." };
         }
 
         public override IdentityError DuplicateRoleName(string role)
         {
-            return new() { Code = nameof(DuplicateRoleName), Description = $"A permissão '{role}' já está sendo utilizada." };
+            return new IdentityError { Code = nameof(DuplicateRoleName), Description = $"A permissão '{role}' já está sendo utilizada." };
         }
 
         public override IdentityError UserAlreadyHasPassword()
         {
-            return new() { Code = nameof(UserAlreadyHasPassword), Description = "Usuário já possui uma senha definida." };
+            return new IdentityError { Code = nameof(UserAlreadyHasPassword), Description = "Usuário já possui uma senha definida." };
         }
 
         public override IdentityError UserLockoutNotEnabled()
         {
-            return new() { Code = nameof(UserLockoutNotEnabled), Description = "Lockout não está habilitado para este usuário." };
+            return new IdentityError { Code = nameof(UserLockoutNotEnabled), Description = "Lockout não está habilitado para este usuário." };
         }
 
         public override IdentityError UserAlreadyInRole(string role)
         {
-            return new() { Code = nameof(UserAlreadyInRole), Description = $"Usuário já possui a permissão '{role}'." };
+            return new IdentityError { Code = nameof(UserAlreadyInRole), Description = $"Usuário já possui a permissão '{role}'." };
         }
 
         public override IdentityError UserNotInRole(string role)
         {
-            return new() { Code = nameof(UserNotInRole), Description = $"Usuário não tem a permissão '{role}'." };
+            return new IdentityError { Code = nameof(UserNotInRole), Description = $"Usuário não tem a permissão '{role}'." };
         }
 
         public override IdentityError PasswordTooShort(int length)
         {
-            return new() { Code = nameof(PasswordTooShort), Description = $"Senhas devem conter ao menos {length} caracteres." };
+            return new IdentityError { Code = nameof(PasswordTooShort), Description = $"Senhas devem conter ao menos {length} caracteres." };
         }
 
         public override IdentityError PasswordRequiresNonAlphanumeric()
         {
-            return new()
+            return new IdentityError
             {
                 Code = nameof(PasswordRequiresNonAlphanumeric),
                 Description = "Senhas devem conter ao menos um caracter não alfanumérico."
@@ -103,7 +103,7 @@ namespace SACA.i18n
 
         public override IdentityError PasswordRequiresDigit()
         {
-            return new()
+            return new IdentityError
             {
                 Code = nameof(PasswordRequiresDigit), Description = "Senhas devem conter ao menos um digito ('0'-'9')."
             };
@@ -111,7 +111,7 @@ namespace SACA.i18n
 
         public override IdentityError PasswordRequiresLower()
         {
-            return new()
+            return new IdentityError
             {
                 Code = nameof(PasswordRequiresLower),
                 Description = "Senhas devem conter ao menos um caracter em caixa baixa ('a'-'z')."
@@ -120,7 +120,7 @@ namespace SACA.i18n
 
         public override IdentityError PasswordRequiresUpper()
         {
-            return new()
+            return new IdentityError
             {
                 Code = nameof(PasswordRequiresUpper),
                 Description = "Senhas devem conter ao menos um caracter em caixa alta ('A'-'Z')."

@@ -1,5 +1,4 @@
-﻿using SACA.Entities;
-using SACA.Entities.Identity;
+﻿using SACA.Entities.Identity;
 using SACA.Entities.Responses;
 
 namespace SACA.Repositories.Interfaces

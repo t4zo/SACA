@@ -4,15 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using SACA.Data;
 using SACA.Data.Seed.Models;
 using SACA.Interfaces;
-#endif
 
 namespace SACA.Extensions
 {
+
     public static class SeedExtensions
     {
         public static async Task<IApplicationBuilder> SeedDatabaseAsync(this IApplicationBuilder app)
         {
-#if !DEBUG
             var scope = app.ApplicationServices.CreateScope();
 
             try
@@ -34,9 +33,10 @@ namespace SACA.Extensions
                 var logger = app.ApplicationServices.GetRequiredService<ILogger<Program>>();
                 logger.LogError(ex, "An error occurred while migrating or initializing the database");
             }
-#endif
+
 
             return app;
         }
     }
 }
+#endif

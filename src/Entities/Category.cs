@@ -1,4 +1,5 @@
 ﻿using SACA.Entities.Identity;
+using SACA.Interfaces;
 using System.Text.Json.Serialization;
 
 namespace SACA.Entities
