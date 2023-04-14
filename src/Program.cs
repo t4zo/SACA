@@ -70,19 +70,9 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
-try
-{
 #if !DEBUG
-    using var scope = app.Services.CreateScope();
-    var context = app.Services.GetRequiredService<ApplicationDbContext>();
-    context.Database.Migrate();
+app.SeedDatabaseAsync().GetAwaiter().GetResult();
 #endif
-}
-catch (Exception ex)
-{
-    var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    logger.LogError(ex, "An error occurred while migrating or initializing the database");
-}
 
 if (app.Environment.IsDevelopment())
 {
@@ -93,8 +83,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseProblemDetails();
-
-app.SeedDatabaseAsync().GetAwaiter().GetResult();
 
 app.UseRouting();
 
