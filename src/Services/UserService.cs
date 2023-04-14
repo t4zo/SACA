@@ -63,13 +63,14 @@ namespace SACA.Services
 
         public async Task<UserResponse> LogInAsync(string username, string password, bool remember)
         {
-            var result = await _signInManager.PasswordSignInAsync(username, password, remember, false);
+            var user = await _userManager.FindByNameAsync(username) ?? await _userManager.FindByEmailAsync(username);
+
+            var result = await _signInManager.PasswordSignInAsync(user.UserName, password, remember, false);
             if (!result.Succeeded)
             {
                 throw new ArgumentException("Usuário e/ou senha inválido(s)");
             }
 
-            var user = await _userManager.FindByNameAsync(username);
             //var userClaims = await _userManager.GetClaimsAsync(user);
             var roles = await _userManager.GetRolesAsync(user);
 
