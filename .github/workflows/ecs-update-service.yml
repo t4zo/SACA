@@ -3,9 +3,9 @@ name: Amazon ECS - Update Service
 on:
   workflow_dispatch:
 
-#   push:
-#     branches: 
-#       - main
+  push:
+    branches: 
+      - main
 
 #   pull_request:
 #     branches: 
