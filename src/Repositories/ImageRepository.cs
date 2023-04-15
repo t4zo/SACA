@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SACA.Data;
 using SACA.Entities;
 using SACA.Entities.Responses;
@@ -11,9 +9,9 @@ namespace SACA.Repositories
     public class ImageRepository : IImageRepository
     {
         private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly MapperlyMapper _mapper;
 
-        public ImageRepository(ApplicationDbContext context, IMapper mapper)
+        public ImageRepository(ApplicationDbContext context, MapperlyMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -36,22 +34,24 @@ namespace SACA.Repositories
 
         public async Task<ImageResponse> GetUserImageAsync(int userId)
         {
-            return await _context.Images
+            var image = await _context.Images
                 .AsNoTracking()
                 .Include(x => x.User.Id == userId)
                 .Where(x => x.UserId == userId)
-                .ProjectTo<ImageResponse>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
+
+            return _mapper.MapToImageResponse(image);
         }
 
         public async Task<ImageResponse> GetUserImageAsync(int userId, int imageId)
         {
-            return await _context.Images
+            var image = await _context.Images
                 .Include(x => x.User)
                 .AsNoTracking()
                 .Where(x => x.Id == imageId && x.UserId == userId)
-                .ProjectTo<ImageResponse>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
+
+            return _mapper.MapToImageResponse(image);
         }
     }
 }

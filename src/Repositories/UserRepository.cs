@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SACA.Data;
 using SACA.Entities.Identity;
 using SACA.Entities.Responses;
@@ -11,9 +9,9 @@ namespace SACA.Repositories
     public class UserRepository : IUserRepository
     {
         private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly MapperlyMapper _mapper;
 
-        public UserRepository(ApplicationDbContext context, IMapper mapper)
+        public UserRepository(ApplicationDbContext context, MapperlyMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -21,7 +19,8 @@ namespace SACA.Repositories
 
         public async Task<List<UserResponse>> GetUsersAsync()
         {
-            return await _context.Users.ProjectTo<UserResponse>(_mapper.ConfigurationProvider).ToListAsync();
+            var users = await _context.Users.ToListAsync();
+            return _mapper.MapToUsersResponse(users).ToList();
         }
 
         public async Task<ApplicationUser> GetUserCategoryAsync(int userId)

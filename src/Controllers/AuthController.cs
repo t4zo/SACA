@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
@@ -9,10 +8,10 @@ using SACA.Repositories.Interfaces;
 
 namespace SACA.Controllers
 {
-    public class AuthController : BaseApiController
+    public class AuthController : BaseApiController, IApiMarker
     {
         private readonly IS3Service _s3Service;
-        private readonly IMapper _mapper;
+        private readonly MapperlyMapper _mapper;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUnityOfWork _uow;
@@ -21,7 +20,7 @@ namespace SACA.Controllers
         public AuthController(
             IUserService userService,
             IS3Service s3Service,
-            IMapper mapper,
+            MapperlyMapper mapper,
             ICategoryRepository categoryRepository,
             IUserRepository userRepository,
             IUnityOfWork unityOfWork
@@ -35,6 +34,21 @@ namespace SACA.Controllers
             _uow = unityOfWork;
         }
 
+        [AllowAnonymous]
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserResponse>> Get(int id)
+        {
+            try
+            {
+                var applicationUser = await _userRepository.GetUserAsync(id);
+                return _mapper.MapToUserResponse(applicationUser);
+            }
+            catch (ArgumentException argumentException)
+            {
+                return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = argumentException.Message });
+            }
+        }
+        
         [AllowAnonymous]
         [HttpPost("signin")]
         public async Task<ActionResult<UserResponse>> SignIn(SignInRequest signInRequest)
@@ -92,7 +106,7 @@ namespace SACA.Controllers
 
             await _uow.SaveChangesAsync();
 
-            return _mapper.Map<UserResponse>(user);
+            return _mapper.MapToUserResponse(user);
         }
     }
 }

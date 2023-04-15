@@ -1,8 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SACA.Constants;
-using SACA.Entities.Identity;
 using SACA.Entities.Responses;
 using SACA.Interfaces;
 using SACA.Repositories.Interfaces;
@@ -13,7 +11,7 @@ namespace SACA.Controllers
     public class SuperuserController : BaseApiController
     {
         private readonly IS3Service _s3Service;
-        private readonly IMapper _mapper;
+        private readonly MapperlyMapper _mapper;
         private readonly IUserRepository _userRepository;
         private readonly IUnityOfWork _uow;
         private readonly IUserService _userService;
@@ -21,7 +19,7 @@ namespace SACA.Controllers
         public SuperuserController(
             IUserService userService,
             IS3Service s3Service,
-            IMapper mapper,
+            MapperlyMapper mapper,
             IUserRepository userRepository,
             IUnityOfWork unityOfWork
         )
@@ -40,7 +38,7 @@ namespace SACA.Controllers
 
             foreach (var userResponse in usersResponses)
             {
-                var user = _mapper.Map<ApplicationUser>(userResponse);
+                var user = _mapper.MapToApplicationUser(userResponse);
                 userResponse.Roles = await _userService.GetRolesAsync(user);
             }
 
@@ -56,7 +54,7 @@ namespace SACA.Controllers
                 return BadRequest();
             }
 
-            var userResponse = _mapper.Map<UserResponse>(user);
+            var userResponse = _mapper.MapToUserResponse(user);
             userResponse.Roles = await _userService.GetRolesAsync(user);
 
             return userResponse;
@@ -76,7 +74,7 @@ namespace SACA.Controllers
 
             await _uow.SaveChangesAsync();
 
-            return _mapper.Map<UserResponse>(user);
+            return _mapper.MapToUserResponse(user);
         }
     }
 }
