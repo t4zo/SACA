@@ -10,18 +10,21 @@ using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.ImagesController;
 
-public class GetAllImagesControllerTests : IClassFixture<ImageApiFactory>
+public class GetAllImagesControllerTests : IClassFixture<TestFactory>
 {
+    private readonly TestFactory _testFactory;
     private readonly HttpClient _client;
 
     private readonly Faker<ImageRequest> _faker = new Faker<ImageRequest>()
         .RuleFor(x => x.CategoryId, faker => 1)
         .RuleFor(x => x.Name, faker => faker.Person.FirstName)
         .RuleFor(x => x.Base64, faker => faker.Image.LoremPixelUrl());
-    
-    public GetAllImagesControllerTests(ImageApiFactory imageApiFactory)
+
+
+    public GetAllImagesControllerTests(TestFactory testFactory)
     {
-        _client = imageApiFactory.CreateClient();
+        _testFactory = testFactory;
+        _client = testFactory.CreateClient();
     }
     
     [Theory]
@@ -29,7 +32,7 @@ public class GetAllImagesControllerTests : IClassFixture<ImageApiFactory>
     public async Task Should_GetImage_WhenIsUserImage(int userId, int imageId)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(new AuthApiFactory());
+        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
         
         // Act
@@ -56,7 +59,7 @@ public class GetAllImagesControllerTests : IClassFixture<ImageApiFactory>
     public async Task Should_ReturnNotFound_WhenIsNotUserImage(int userId, int imageId)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(new AuthApiFactory());
+        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
         
         // Act

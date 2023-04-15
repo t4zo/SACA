@@ -4,13 +4,13 @@ using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.AuthController;
 
-public class GetUserAuthControllerTests : IClassFixture<AuthApiFactory>
+public class GetUserAuthControllerTests : IClassFixture<TestFactory>
 {
     private readonly HttpClient _client;
 
-    public GetUserAuthControllerTests(AuthApiFactory authApiFactory)
+    public GetUserAuthControllerTests(TestFactory testFactory)
     {
-        _client = authApiFactory.CreateClient();
+        _client = testFactory.CreateClient();
     }
 
     [Theory]

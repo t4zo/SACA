@@ -7,21 +7,21 @@ using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.AuthController;
 
-public class DeleteUserAuthControllerTests : IClassFixture<AuthApiFactory>
+public class DeleteUserAuthControllerTests : IClassFixture<TestFactory>
 {
-    private readonly AuthApiFactory _authApiFactory;
+    private readonly TestFactory _testFactory;
     private readonly HttpClient _client;
 
-    public DeleteUserAuthControllerTests(AuthApiFactory authApiFactory)
+    public DeleteUserAuthControllerTests(TestFactory testFactory)
     {
-        _authApiFactory = authApiFactory;
-        _client = authApiFactory.CreateClient();
+        _testFactory = testFactory;
+        _client = testFactory.CreateClient();
     }
     
     public async Task<UserResponse> Should_DeleteUser_WhenUserExist(int id)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_authApiFactory);
+        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(id);
         
         // Act
@@ -49,7 +49,7 @@ public class DeleteUserAuthControllerTests : IClassFixture<AuthApiFactory>
     public async Task Should_CreateAndDeleteUser_WhenUserDoesNotExist()
     {
         // Arrange
-        var createUserAuthControllerTests = new CreateUserAuthControllerTests(_authApiFactory);
+        var createUserAuthControllerTests = new CreateUserAuthControllerTests(_testFactory);
         var user = await createUserAuthControllerTests.Should_CreateUser_WhenUserDoesNotExist();
         
         // Act

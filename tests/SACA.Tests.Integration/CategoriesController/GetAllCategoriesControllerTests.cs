@@ -9,13 +9,15 @@ using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.CategoriesController;
 
-public class GetAllCategoriesControllerTests : IClassFixture<CategoryApiFactory>
+public class GetAllCategoriesControllerTests : IClassFixture<TestFactory>
 {
+    private readonly TestFactory _testFactory;
     private readonly HttpClient _client;
 
-    public GetAllCategoriesControllerTests(CategoryApiFactory categoryApiFactory)
+    public GetAllCategoriesControllerTests(TestFactory testFactory)
     {
-        _client = categoryApiFactory.CreateClient();
+        _testFactory = testFactory;
+        _client = testFactory.CreateClient();
     }
 
     [Fact]
@@ -34,7 +36,7 @@ public class GetAllCategoriesControllerTests : IClassFixture<CategoryApiFactory>
     public async Task Should_GetCategory_WhenCategoryExist(int id)
     {
         // Arrange
-        var createUserAuthControllerTests = new CreateUserAuthControllerTests(new AuthApiFactory());
+        var createUserAuthControllerTests = new CreateUserAuthControllerTests(_testFactory);
         var user = await createUserAuthControllerTests.Should_CreateUser_WhenUserDoesNotExist();
         
         // Act

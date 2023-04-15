@@ -1,5 +1,4 @@
 ﻿#if !DEBUG
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SACA.Data;
 using SACA.Data.Seed.Models;
@@ -22,11 +21,10 @@ namespace SACA.Extensions
                 await scope.ServiceProvider.CreateRolesAsync();
                 await scope.ServiceProvider.CreateUsersAsync();
 
-                var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
                 var s3Service = scope.ServiceProvider.GetRequiredService<IS3Service>();
 
                 await new CategoriesSeed(context).LoadAsync();
-                await new ImagesSeed(context, s3Service, mapper).LoadAsync();
+                await new ImagesSeed(context, s3Service, new MapperlyMapper()).LoadAsync();
             }
             catch (Exception ex)
             {

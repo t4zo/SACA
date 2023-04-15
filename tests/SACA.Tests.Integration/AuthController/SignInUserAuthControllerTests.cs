@@ -6,21 +6,21 @@ using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.AuthController;
 
-public class SignInUserAuthControllerTests : IClassFixture<AuthApiFactory>
+public class SignInUserAuthControllerTests : IClassFixture<TestFactory>
 {
-    private readonly AuthApiFactory _authApiFactory;
+    private readonly TestFactory _testFactory;
     private readonly HttpClient _client;
 
-    public SignInUserAuthControllerTests(AuthApiFactory authApiFactory)
+    public SignInUserAuthControllerTests(TestFactory testFactory)
     {
-        _authApiFactory = authApiFactory;
-        _client = authApiFactory.CreateClient();
+        _testFactory = testFactory;
+        _client = testFactory.CreateClient();
     }
     
     public async Task<UserResponse> Should_SignIn_WhenUserExist(int id)
     {
         // Arrange
-        var getUserAuthControllerTests = new GetUserAuthControllerTests(_authApiFactory);
+        var getUserAuthControllerTests = new GetUserAuthControllerTests(_testFactory);
         var user = await getUserAuthControllerTests.Should_GetUser_WhenUserExist(id);
 
         // Act
