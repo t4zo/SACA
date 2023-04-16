@@ -48,7 +48,7 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
     
     [Theory]
     [InlineData(1, 100)]
-    public async Task<ImageResponse> Should_GetImage_WhenUserImage(int userId, int imageId)
+    public async Task<ImageResponse> Should_GetImage_WhenIsUserImage(int userId, int imageId)
     {
         // Arrange
         var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
@@ -101,7 +101,7 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
     }
 
     [Fact]
-    public async Task Should_ReturnsUnauthorizedResult_WhenUserIsPassed()
+    public async Task Should_ReturnsUnauthorizedResult_WhenUserIsNotAuthenticated()
     {
         // Act
         var response = await _client.GetAsync("v2/Images");

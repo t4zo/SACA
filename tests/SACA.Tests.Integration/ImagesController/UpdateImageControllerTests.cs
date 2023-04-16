@@ -34,7 +34,7 @@ public class UpdateImageControllerTests : IClassFixture<TestFactory>
         
         // Act
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
-        var image = await getImagesControllerTests.Should_GetImage_WhenUserImage(userId, imageId);
+        var image = await getImagesControllerTests.Should_GetImage_WhenIsUserImage(userId, imageId);
 
         var content = new ImageRequest
         {

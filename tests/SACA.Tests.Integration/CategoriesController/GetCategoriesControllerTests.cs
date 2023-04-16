@@ -21,7 +21,7 @@ public class GetCategoriesControllerTests : IClassFixture<TestFactory>
     }
 
     [Fact]
-    public async Task Should_GetAllCategories_WhenCategoriesExist()
+    public async Task Should_GetAllCategories_WhenUserIsNotAuthenticated()
     {
         // Act
         var response = await _client.GetAsync("v2/Categories");
@@ -30,6 +30,30 @@ public class GetCategoriesControllerTests : IClassFixture<TestFactory>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
     
+    [Theory]
+    [InlineData(1)]
+    public async Task Should_GetAllCategories_WhenUserIsAuthenticated(int userId)
+    {
+        // Arrange
+        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
+        
+        // Act
+        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
+        var requestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri($"v2/Categories", UriKind.Relative),
+            Headers =
+            {
+                Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token),
+            },
+        };
+        
+        var response = await _client.SendAsync(requestMessage);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
     
     [Theory]
     [InlineData(1)]
