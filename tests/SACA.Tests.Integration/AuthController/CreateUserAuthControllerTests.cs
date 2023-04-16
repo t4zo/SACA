@@ -7,9 +7,9 @@ using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.AuthController;
 
-// public class CreateUserAuthControllerTests : IClassFixture<TestFactory>
-[Collection("Test collection")]
-public class CreateUserAuthControllerTests
+public class CreateUserAuthControllerTests : IClassFixture<TestFactory>
+// [Collection("Test collection")]
+// public class CreateUserAuthControllerTests
 {
     private readonly TestFactory _testFactory;
     private readonly HttpClient _client;
