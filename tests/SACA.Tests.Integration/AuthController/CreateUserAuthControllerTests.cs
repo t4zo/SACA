@@ -29,37 +29,19 @@ public class CreateUserAuthControllerTests : IClassFixture<TestFactory>
     }
     
     [Fact]
-    public async Task<UserResponse> Should_CreateAndDeleteUser_WhenUserDoesNotExist()
+    public async Task Should_CreateAndDeleteUser_WhenUserDoesNotExist()
     {
         // Arrange
-        var user = _faker.Generate();
+        var deleteUserAuthControllerTests = new DeleteUserAuthControllerTests(_testFactory);
         
         // Act
-        var response = await _client.PostAsJsonAsync($"v2/Auth/signup", user);
-        // var requestMessage = new HttpRequestMessage
-        // {
-        //     Method = HttpMethod.Post,
-        //     RequestUri = new Uri($"v2/Auth/signup", UriKind.Relative),
-        //     Content = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"),
-        //
-        // };
-        //
-        // var response = await _client.SendAsync(requestMessage);
-        
-        var userResponse = await response.Content.ReadFromJsonAsync<UserResponse>();
-        
-        var deleteUserAuthControllerTests = new DeleteUserAuthControllerTests(_testFactory);
-        var deletedUser = await deleteUserAuthControllerTests.Should_DeleteUser_WhenUserExist(userResponse.Id);
+        var createdUser = await Should_CreateUser_WhenUserDoesNotExist();
+        var deletedUser = await deleteUserAuthControllerTests.Should_DeleteUser_WhenUserExist(createdUser.Id);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        userResponse.Username.Should().Equals(user.UserName);
-        deletedUser.Id.Should().Equals(userResponse.Id);
-
-        return userResponse;
+        deletedUser.Id.Should().Be(createdUser.Id);
     }
-    
-    [Fact]
+
     public async Task<UserResponse> Should_CreateUser_WhenUserDoesNotExist()
     {
         // Arrange
@@ -71,7 +53,6 @@ public class CreateUserAuthControllerTests : IClassFixture<TestFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        userResponse.Username.Should().Equals(user.UserName);
 
         return userResponse;
     }

@@ -21,7 +21,7 @@ public class GetUserAuthControllerTests : IClassFixture<TestFactory>
         var user = await _client.GetFromJsonAsync<ApplicationUser>($"v2/Auth/{id}");
 
         // Assert
-        user.Id.Should().Equals(id);
+        user.Id.Should().Be(id);
 
         return user;
     }

@@ -21,20 +21,21 @@ public class SignInUserAuthControllerTests : IClassFixture<TestFactory>
     {
         // Arrange
         var getUserAuthControllerTests = new GetUserAuthControllerTests(_testFactory);
-        var user = await getUserAuthControllerTests.Should_GetUser_WhenUserExist(id);
 
         // Act
+        var user = await getUserAuthControllerTests.Should_GetUser_WhenUserExist(id);
         var response = await _client.PostAsJsonAsync($"v2/auth/signin", new SignInRequest
         {
             Email = user.Email,
             Password = "123qwe",
             Remember = false,
         });
+        
         var userResponse = await response.Content.ReadFromJsonAsync<UserResponse>();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        userResponse.Id.Should().Equals(user.Id);
+        userResponse.Id.Should().Be(user.Id);
 
         return userResponse;
     }

@@ -18,7 +18,8 @@ namespace SACA.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IUnityOfWork _uow;
 
-        public ImagesController(IImageService imageService, IS3Service s3Service, MapperlyMapper mapper, ICategoryRepository categoryRepository, IImageRepository imageRepository, IUserRepository userRepository, IUnityOfWork uow)
+        public ImagesController(IImageService imageService, IS3Service s3Service, MapperlyMapper mapper, ICategoryRepository categoryRepository, IImageRepository imageRepository,
+            IUserRepository userRepository, IUnityOfWork uow)
         {
             _imageService = imageService;
             _s3Service = s3Service;
@@ -40,12 +41,12 @@ namespace SACA.Controllers
 
             var imageResponse = await _imageRepository.GetUserImageAsync(userId.Value);
 
-                if (imageResponse is null)
-                {
-                    return NotFound();
-                }
+            if (imageResponse is null)
+            {
+                return NotFound();
+            }
 
-                return Ok(imageResponse);
+            return Ok(imageResponse);
         }
 
         [HttpGet("{id}")]
@@ -56,7 +57,7 @@ namespace SACA.Controllers
             {
                 return NoContent();
             }
-            
+
             var imageResponse = await _imageRepository.GetUserImageAsync(userId.Value, id);
 
             if (imageResponse is null)
@@ -110,6 +111,7 @@ namespace SACA.Controllers
                 return NotFound("The image was not found");
                 // throw new ImageNotFoundException("The image was not found");
             }
+
             var originalImage = await _imageRepository.GetAsync(id);
 
             if (originalImage is null)
@@ -123,7 +125,7 @@ namespace SACA.Controllers
             {
                 return NoContent();
             }
-            
+
             var user = await _userRepository.GetUserAsync(userId.Value);
 
             await _s3Service.RemoveFileAsync(originalImage.Url);

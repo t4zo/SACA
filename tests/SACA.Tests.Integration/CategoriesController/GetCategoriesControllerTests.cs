@@ -9,12 +9,12 @@ using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.CategoriesController;
 
-public class GetAllCategoriesControllerTests : IClassFixture<TestFactory>
+public class GetCategoriesControllerTests : IClassFixture<TestFactory>
 {
     private readonly TestFactory _testFactory;
     private readonly HttpClient _client;
 
-    public GetAllCategoriesControllerTests(TestFactory testFactory)
+    public GetCategoriesControllerTests(TestFactory testFactory)
     {
         _testFactory = testFactory;
         _client = testFactory.CreateClient();
@@ -37,9 +37,10 @@ public class GetAllCategoriesControllerTests : IClassFixture<TestFactory>
     {
         // Arrange
         var createUserAuthControllerTests = new CreateUserAuthControllerTests(_testFactory);
-        var user = await createUserAuthControllerTests.Should_CreateUser_WhenUserDoesNotExist();
-        
+        var deleteUserAuthControllerTests = new DeleteUserAuthControllerTests(_testFactory);
+
         // Act
+        var user = await createUserAuthControllerTests.Should_CreateUser_WhenUserDoesNotExist();
         var requestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
@@ -52,9 +53,11 @@ public class GetAllCategoriesControllerTests : IClassFixture<TestFactory>
 
         var response = await _client.SendAsync(requestMessage);
         var categoryResponse = await response.Content.ReadFromJsonAsync<Category>();
+        
+        await deleteUserAuthControllerTests.Should_DeleteUser_WhenUserExist(user.Id);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        categoryResponse.Id.Should().Equals(id);
+        categoryResponse.Id.Should().Be(id);
     }
 }

@@ -36,7 +36,7 @@ namespace SACA.Repositories
         {
             var image = await _context.Images
                 .AsNoTracking()
-                .Include(x => x.User.Id == userId)
+                .Include(x => x.User)
                 .Where(x => x.UserId == userId)
                 .FirstOrDefaultAsync();
 

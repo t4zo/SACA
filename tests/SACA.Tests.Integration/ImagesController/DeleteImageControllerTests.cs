@@ -1,47 +1,52 @@
+using Bogus;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Newtonsoft.Json;
+using SACA.Entities.Requests;
 using SACA.Entities.Responses;
+using SACA.Tests.Integration.AuthController;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 
-namespace SACA.Tests.Integration.AuthController;
+namespace SACA.Tests.Integration.ImagesController;
 
-public class DeleteUserAuthControllerTests : IClassFixture<TestFactory>
+public class DeleteImageControllerTests : IClassFixture<TestFactory>
 {
     private readonly TestFactory _testFactory;
     private readonly HttpClient _client;
 
-    public DeleteUserAuthControllerTests(TestFactory testFactory)
+    public DeleteImageControllerTests(TestFactory testFactory)
     {
         _testFactory = testFactory;
         _client = testFactory.CreateClient();
     }
     
-    public async Task<UserResponse> Should_DeleteUser_WhenUserExist(int id)
+    public async Task<ImageResponse> Should_DeleteUserImage_WhenUserExists(int userId, int imageId)
     {
         // Arrange
         var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
 
         // Act
-        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(id);
+        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
         var requestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Delete,
-            RequestUri = new Uri($"v2/Auth/user", UriKind.Relative),
+            RequestUri = new Uri($"v2/Images/{imageId}", UriKind.Relative),
             Headers =
             {
                 Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token),
             },
         };
-        
+
         var response = await _client.SendAsync(requestMessage);
-        var userResponse = await response.Content.ReadFromJsonAsync<UserResponse>();
+        var deletedImageResponse = await response.Content.ReadFromJsonAsync<ImageResponse>();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        userResponse.Id.Should().Be(id);
-
-        return userResponse;
+        deletedImageResponse.Id.Should().Be(imageId);
+        
+        return deletedImageResponse;
     }
 }
