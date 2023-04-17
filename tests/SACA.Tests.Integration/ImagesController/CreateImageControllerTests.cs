@@ -56,18 +56,20 @@ public class CreateImageControllerTests : IClassFixture<TestFactory>
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
-        var requestMessage = new HttpRequestMessage
-        {
-            Method = HttpMethod.Post,
-            RequestUri = new Uri($"v2/Images", UriKind.Relative),
-            Content = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json"),
-            Headers =
-            {
-                Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token),
-            },
-        };
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
+        
+        // var requestMessage = new HttpRequestMessage
+        // {
+        //     Method = HttpMethod.Post,
+        //     RequestUri = new Uri($"v2/Images", UriKind.Relative),
+        //     Content = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json"),
+        //     Headers =
+        //     {
+        //         Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token),
+        //     },
+        // };
 
-        var response = await _client.SendAsync(requestMessage);
+        var response = await _client.PostAsJsonAsync("v2/Images", content);
         var imageResponse = await response.Content.ReadFromJsonAsync<ImageResponse>();
 
         // Assert

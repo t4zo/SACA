@@ -27,20 +27,12 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
     {
         // Arrange
         var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
-        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
-        
+
         // Act
-        var requestMessage = new HttpRequestMessage
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri($"v2/Images", UriKind.Relative),
-            Headers =
-            {
-                Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token),
-            },
-        };
+        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
         
-        var response = await _client.SendAsync(requestMessage);
+        var response = await _client.GetAsync("v2/Images");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -55,17 +47,9 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
         
         // Act
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
-        var requestMessage = new HttpRequestMessage
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri($"v2/Images/{imageId}", UriKind.Relative),
-            Headers =
-            {
-                Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token),
-            },
-        };
-        
-        var response = await _client.SendAsync(requestMessage);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
+
+        var response = await _client.GetAsync($"v2/Images/{imageId}");
         var imageResponse = await response.Content.ReadFromJsonAsync<ImageResponse>();
 
         // Assert
@@ -84,17 +68,9 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
         
         // Act
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
-        var requestMessage = new HttpRequestMessage
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri($"v2/Images/{imageId}", UriKind.Relative),
-            Headers =
-            {
-                Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token),
-            },
-        };
-        
-        var response = await _client.SendAsync(requestMessage);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
+
+        var response = await _client.GetAsync($"v2/Images/{imageId}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);

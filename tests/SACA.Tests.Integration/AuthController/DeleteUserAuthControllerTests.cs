@@ -25,17 +25,9 @@ public class DeleteUserAuthControllerTests : IClassFixture<TestFactory>
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(id);
-        var requestMessage = new HttpRequestMessage
-        {
-            Method = HttpMethod.Delete,
-            RequestUri = new Uri($"v2/Auth/user", UriKind.Relative),
-            Headers =
-            {
-                Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token),
-            },
-        };
-        
-        var response = await _client.SendAsync(requestMessage);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
+
+        var response = await _client.DeleteAsync("v2/Auth/user");
         var userResponse = await response.Content.ReadFromJsonAsync<UserResponse>();
 
         // Assert

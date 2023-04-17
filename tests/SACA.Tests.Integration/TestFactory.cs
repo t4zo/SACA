@@ -74,6 +74,8 @@ public class TestFactory : WebApplicationFactory<Program>
     //         if (descriptor is not null) services.Remove(descriptor);
     //
     //         // Add DB context pointing to test container
+    //         // services.AddDbContextPool<ApplicationDbContext>(options =>
+    //         //     options.UseNpgsql(connectionString));
     //         services.AddDbContext<ApplicationDbContext>(options => { options.UseNpgsql(connectionString); });
     //
     //         // Ensure schema gets created
@@ -85,8 +87,7 @@ public class TestFactory : WebApplicationFactory<Program>
     //
     //         try
     //         {
-    //             // context.Database.EnsureCreated();
-    //             context.Database.MigrateAsync().GetAwaiter().GetResult();
+    //             context.Database.Migrate();
     //
     //             scope.ServiceProvider.CreateRolesAsync().GetAwaiter().GetResult();
     //             scope.ServiceProvider.CreateUsersAsync().GetAwaiter().GetResult();

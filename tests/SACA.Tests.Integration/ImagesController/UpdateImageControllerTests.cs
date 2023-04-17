@@ -44,18 +44,9 @@ public class UpdateImageControllerTests : IClassFixture<TestFactory>
             Base64 = DatabaseConstants.CatUpdate,
         };
         
-        var requestMessage = new HttpRequestMessage
-        {
-            Method = HttpMethod.Put,
-            RequestUri = new Uri($"v2/Images/{imageId}", UriKind.Relative),
-            Content = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json"),
-            Headers =
-            {
-                Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token),
-            },
-        };
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
         
-        var response = await _client.SendAsync(requestMessage);
+        var response = await _client.PutAsJsonAsync($"v2/Images/{imageId}", content);
         var updatedImageResponse = await response.Content.ReadFromJsonAsync<ImageResponse>();
 
         // Assert
