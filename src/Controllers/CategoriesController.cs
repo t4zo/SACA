@@ -8,7 +8,7 @@ using SACA.Repositories.Interfaces;
 
 namespace SACA.Controllers
 {
-    public class CategoriesController : BaseApiController, IApiMarker
+    public class CategoriesController : BaseApiController
     {
         private readonly ICategoryRepository _categoryRepository;
 

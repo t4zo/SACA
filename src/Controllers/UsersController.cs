@@ -68,46 +68,5 @@ namespace SACA.Controllers
                 return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = argumentException.Message });
             }
         }
-        
-        [HttpDelete]
-        public async Task<ActionResult<UserResponse>> Remove()
-        {
-            var userId = User.GetId();
-            if (!userId.HasValue)
-            {
-                return BadRequest();
-            }
-
-            var user = await _userRepository.GetUserAsync(userId.Value);
-            if (user is null)
-            {
-                return BadRequest();
-            }
-
-            await _s3Service.RemoveFolderAsync(user.Id.ToString());
-            await _userService.DeleteAsync(user);
-
-            await _uow.SaveChangesAsync();
-
-            return _mapper.MapToUserResponse(user);
-        }
-
-        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<UserResponse>> Remove(int id)
-        {
-            var user = await _userRepository.GetUserAsync(id);
-            if (user is null)
-            {
-                return BadRequest();
-            }
-
-            await _s3Service.RemoveFolderAsync(user.Id.ToString());
-            await _userService.DeleteAsync(user);
-
-            await _uow.SaveChangesAsync();
-
-            return _mapper.MapToUserResponse(user);
-        }
     }
 }

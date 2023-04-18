@@ -10,7 +10,7 @@ using SACA.Repositories.Interfaces;
 
 namespace SACA.Controllers
 {
-    public class ImagesController : BaseApiController, IApiMarker
+    public class ImagesController : BaseApiController
     {
         private readonly IImageService _imageService;
         private readonly IS3Service _s3Service;

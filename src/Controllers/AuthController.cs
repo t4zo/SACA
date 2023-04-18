@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SACA.Constants;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
 using SACA.Extensions;
@@ -8,7 +9,7 @@ using SACA.Repositories.Interfaces;
 
 namespace SACA.Controllers
 {
-    public class AuthController : BaseApiController, IApiMarker
+    public class AuthController : BaseApiController
     {
         private readonly IS3Service _s3Service;
         private readonly MapperlyMapper _mapper;
@@ -104,6 +105,24 @@ namespace SACA.Controllers
             }
 
             var user = await _userRepository.GetUserAsync(userId.Value);
+            if (user is null)
+            {
+                return BadRequest();
+            }
+
+            await _s3Service.RemoveFolderAsync(user.Id.ToString());
+            await _userService.DeleteAsync(user);
+
+            await _uow.SaveChangesAsync();
+
+            return _mapper.MapToUserResponse(user);
+        }
+
+        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
+        [HttpDelete("user/{id}")]
+        public async Task<ActionResult<UserResponse>> Remove(int id)
+        {
+            var user = await _userRepository.GetUserAsync(id);
             if (user is null)
             {
                 return BadRequest();

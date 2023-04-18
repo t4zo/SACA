@@ -28,7 +28,7 @@ public class DeleteUserAuthControllerTests : IClassFixture<TestFactory>
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
 
-        var response = await _client.DeleteAsync("v2/Users");
+        var response = await _client.DeleteAsync("v2/Auth/user");
         var userResponse = await response.Content.ReadFromJsonAsync<UserResponse>();
 
         // Assert
@@ -49,7 +49,7 @@ public class DeleteUserAuthControllerTests : IClassFixture<TestFactory>
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
 
-        var response = await _client.DeleteAsync($"v2/Users/{id}");
+        var response = await _client.DeleteAsync($"v2/Auth/user/{id}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
