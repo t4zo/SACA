@@ -76,4 +76,49 @@ public class CreateImageControllerTests : IClassFixture<TestFactory>
 
         return imageResponse;
     }
+    
+    [Theory]
+    [InlineData(1)]
+    public async Task Should_CreateAndDeleteImage_WhenUserIsSuperuser(int id)
+    {
+        // Arrange
+        var content = _faker.Generate();
+
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+
+        // Act
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
+
+        var createImage = await _client.PostAsJsonAsync("v2/Images/superuser", content);
+        var createImageResponse = await createImage.Content.ReadFromJsonAsync<ImageResponse>();
+        
+        var deleteImage = await _client.DeleteAsync($"v2/Images/superuser/{createImageResponse.Id}");
+        var deleteImageResponse = await deleteImage.Content.ReadFromJsonAsync<ImageResponse>();
+
+        // Assert
+        createImage.StatusCode.Should().Be(HttpStatusCode.OK);
+        deleteImage.StatusCode.Should().Be(HttpStatusCode.OK);
+        
+        createImageResponse.Id.Should().Be(deleteImageResponse.Id);
+    }
+    
+    [Theory]
+    [InlineData(2)]
+    public async Task Should_ReturnForbidden_WhenUserIsNotSuperuser(int id)
+    {
+        // Arrange
+        var content = _faker.Generate();
+
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+
+        // Act
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
+
+        var response = await _client.PostAsJsonAsync("v2/Images/superuser", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }

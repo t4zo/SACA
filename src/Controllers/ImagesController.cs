@@ -1,5 +1,7 @@
 ﻿using ImageMagick;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SACA.Constants;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
 using SACA.Extensions;
@@ -162,8 +164,9 @@ namespace SACA.Controllers
             return Ok(_mapper.MapToImageResponse(image));
         }
 
+        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpPost("superuser")]
-        public async Task<ActionResult<ImageResponse>> CreateAdmin(ImageRequest imageRequest)
+        public async Task<ActionResult<ImageResponse>> SuperuserCreateImage(ImageRequest imageRequest)
         {
             var image = _mapper.MapToImage(imageRequest);
 
@@ -178,8 +181,9 @@ namespace SACA.Controllers
             return Ok(_mapper.MapToImageResponse(image));
         }
 
+        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpDelete("superuser/{id}")]
-        public async Task<ActionResult<ImageResponse>> RemoveAdmin(int id)
+        public async Task<ActionResult<ImageResponse>> SuperuserRemoveImage(int id)
         {
             var image = await _imageRepository.GetAsync(id);
             if (image is null)

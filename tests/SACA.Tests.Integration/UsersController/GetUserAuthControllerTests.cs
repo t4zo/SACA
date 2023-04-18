@@ -22,7 +22,7 @@ public class GetUserAuthControllerTests : IClassFixture<TestFactory>
 
     [Theory]
     [InlineData(1)]
-    public async Task<List<UserResponse>> Should_ReturnUsers_WhenIsSuperuser(int id)
+    public async Task<List<UserResponse>> Should_ReturnUsers_WhenUserIsSuperuser(int id)
     {
         // Arrange
         var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
