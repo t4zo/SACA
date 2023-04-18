@@ -21,7 +21,7 @@ public class GetCategoriesControllerTests : IClassFixture<TestFactory>
     }
 
     [Fact]
-    public async Task Should_GetAllCategories_WhenUserIsNotAuthenticated()
+    public async Task Should_ReturnCategories_WhenUserIsNotAuthenticated()
     {
         // Act
         var response = await _client.GetAsync("v2/Categories");
@@ -32,13 +32,13 @@ public class GetCategoriesControllerTests : IClassFixture<TestFactory>
     
     [Theory]
     [InlineData(1)]
-    public async Task Should_GetAllCategories_WhenUserIsAuthenticated(int userId)
+    public async Task Should_ReturnCategories_WhenUserIsAuthenticated(int userId)
     {
         // Arrange
         var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
         
         // Act
-        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
 
         var response = await _client.GetAsync("v2/Categories");
@@ -49,14 +49,14 @@ public class GetCategoriesControllerTests : IClassFixture<TestFactory>
     
     [Theory]
     [InlineData(1)]
-    public async Task Should_GetCategory_WhenCategoryExist(int id)
+    public async Task Should_ReturnCategory_WhenCategoryExist(int id)
     {
         // Arrange
         var createUserAuthControllerTests = new SignUpAuthControllerTests(_testFactory);
         var deleteUserAuthControllerTests = new DeleteUserAuthControllerTests(_testFactory);
 
         // Act
-        var user = await createUserAuthControllerTests.Should_CreateUser_WhenUserDoesNotExist();
+        var user = await createUserAuthControllerTests.Should_SignUpUser_WhenUserDoesNotExist();
         var requestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Get,

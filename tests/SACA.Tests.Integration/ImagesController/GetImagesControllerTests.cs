@@ -23,13 +23,13 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
     
     [Theory]
     [InlineData(1)]
-    public async Task Should_GetUserImages_WhenUserExists(int userId)
+    public async Task Should_ReturnUserImages_WhenUserExists(int userId)
     {
         // Arrange
         var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
 
         // Act
-        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
         
         var response = await _client.GetAsync("v2/Images");
@@ -40,13 +40,13 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
     
     [Theory]
     [InlineData(1, 100)]
-    public async Task<ImageResponse> Should_GetImage_WhenIsUserImage(int userId, int imageId)
+    public async Task<ImageResponse> Should_ReturnImage_WhenIsUserImage(int userId, int imageId)
     {
         // Arrange
         var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
         
         // Act
-        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
 
         var response = await _client.GetAsync($"v2/Images/{imageId}");
@@ -67,7 +67,7 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
         var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
         
         // Act
-        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
 
         var response = await _client.GetAsync($"v2/Images/{imageId}");
@@ -77,7 +77,7 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
     }
 
     [Fact]
-    public async Task Should_ReturnsUnauthorizedResult_WhenUserIsNotAuthenticated()
+    public async Task Should_ReturnUnauthorized_WhenUserIsNotAuthenticated()
     {
         // Act
         var response = await _client.GetAsync("v2/Images");

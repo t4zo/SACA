@@ -18,13 +18,13 @@ public class SignInAuthControllerTests : IClassFixture<TestFactory>
         _client = testFactory.CreateClient();
     }
     
-    public async Task<UserResponse> Should_SignIn_WhenUserExist(int id)
+    public async Task<UserResponse> Should_SignInUser_WhenUserExist(int id)
     {
         // Arrange
         var getUserAuthControllerTests = new GetUserAuthControllerTests(_testFactory);
 
         // Act
-        var user = await getUserAuthControllerTests.Should_GetUser_WhenUserExist(id);
+        var user = await getUserAuthControllerTests.Should_ReturnUser_WhenUserExist(id);
         var response = await _client.PostAsJsonAsync($"v2/auth/signin", new SignInRequest
         {
             Email = user.Email,

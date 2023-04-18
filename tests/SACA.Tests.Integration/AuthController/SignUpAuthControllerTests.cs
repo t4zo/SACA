@@ -36,14 +36,14 @@ public class SignUpAuthControllerTests : IClassFixture<TestFactory>
         var deleteUserAuthControllerTests = new DeleteUserAuthControllerTests(_testFactory);
         
         // Act
-        var createdUser = await Should_CreateUser_WhenUserDoesNotExist();
+        var createdUser = await Should_SignUpUser_WhenUserDoesNotExist();
         var deletedUser = await deleteUserAuthControllerTests.Should_DeleteUser_WhenUserExist(createdUser.Id);
 
         // Assert
         deletedUser.Id.Should().Be(createdUser.Id);
     }
 
-    public async Task<UserResponse> Should_CreateUser_WhenUserDoesNotExist()
+    public async Task<UserResponse> Should_SignUpUser_WhenUserDoesNotExist()
     {
         // Arrange
         var user = _faker.Generate();

@@ -28,7 +28,7 @@ public class DeleteImageControllerTests : IClassFixture<TestFactory>
         var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
 
         // Act
-        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
 
         var response = await _client.DeleteAsync($"v2/Images/{imageId}");

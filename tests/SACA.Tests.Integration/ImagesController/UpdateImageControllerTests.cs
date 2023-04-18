@@ -25,15 +25,15 @@ public class UpdateImageControllerTests : IClassFixture<TestFactory>
 
     [Theory]
     [InlineData(1, 100)]
-    public async Task<ImageResponse> Should_UpdateUserImage_WhenIsUserExists(int userId, int imageId)
+    public async Task<ImageResponse> Should_UpdateUserImage_WhenUserExists(int userId, int imageId)
     {
         // Arrange
         var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
         var getImagesControllerTests = new GetImagesControllerTests(_testFactory);
         
         // Act
-        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
-        var image = await getImagesControllerTests.Should_GetImage_WhenIsUserImage(userId, imageId);
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
+        var image = await getImagesControllerTests.Should_ReturnImage_WhenIsUserImage(userId, imageId);
 
         var content = new ImageRequest
         {

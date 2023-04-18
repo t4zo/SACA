@@ -38,7 +38,7 @@ public class CreateImageControllerTests : IClassFixture<TestFactory>
         var deleteImageControllerTests = new DeleteImageControllerTests(_testFactory);
 
         // Act
-        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
         var createdImageResponse = await Should_CreateUserImage_WhenUserExists(userId);
         var deletedImageResponse = await deleteImageControllerTests.Should_DeleteUserImage_WhenUserExists(user.Id, createdImageResponse.Id);
 
@@ -54,7 +54,7 @@ public class CreateImageControllerTests : IClassFixture<TestFactory>
         var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
 
         // Act
-        var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
         
         // var requestMessage = new HttpRequestMessage

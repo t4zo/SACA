@@ -1,21 +1,67 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SACA.Entities.Identity;
+using SACA.Entities.Responses;
+using SACA.Tests.Integration.AuthController;
+using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.UsersController;
 
 public class GetUserAuthControllerTests : IClassFixture<TestFactory>
 {
+    private readonly TestFactory _testFactory;
     private readonly HttpClient _client;
 
     public GetUserAuthControllerTests(TestFactory testFactory)
     {
+        _testFactory = testFactory;
         _client = testFactory.CreateClient();
     }
 
     [Theory]
     [InlineData(1)]
-    public async Task<ApplicationUser> Should_GetUser_WhenUserExist(int id)
+    public async Task<List<UserResponse>> Should_ReturnUsers_WhenIsSuperuser(int id)
+    {
+        // Arrange
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+
+        // Act
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
+        
+        // Act
+        var response = await _client.GetAsync($"v2/Users");
+        var users = await response.Content.ReadFromJsonAsync<List<UserResponse>>();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        return users;
+    }
+    
+    [Theory]
+    [InlineData(2)]
+    public async Task Should_ReturnForbidden_WhenIsNotSuperuser(int id)
+    {
+        // Arrange
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+
+        // Act
+        var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
+        
+        // Act
+        var response = await _client.GetAsync($"v2/Users");
+        
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+    
+    [Theory]
+    [InlineData(1)]
+    public async Task<ApplicationUser> Should_ReturnUser_WhenUserExist(int id)
     {
         // Act
         var user = await _client.GetFromJsonAsync<ApplicationUser>($"v2/Users/{id}");
