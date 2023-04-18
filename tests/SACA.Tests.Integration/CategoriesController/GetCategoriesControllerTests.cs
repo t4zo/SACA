@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Newtonsoft.Json;
 using SACA.Entities;
 using SACA.Tests.Integration.AuthController;
+using SACA.Tests.Integration.UsersController;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -35,7 +35,7 @@ public class GetCategoriesControllerTests : IClassFixture<TestFactory>
     public async Task Should_GetAllCategories_WhenUserIsAuthenticated(int userId)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
         
         // Act
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
@@ -52,7 +52,7 @@ public class GetCategoriesControllerTests : IClassFixture<TestFactory>
     public async Task Should_GetCategory_WhenCategoryExist(int id)
     {
         // Arrange
-        var createUserAuthControllerTests = new CreateUserAuthControllerTests(_testFactory);
+        var createUserAuthControllerTests = new SignUpAuthControllerTests(_testFactory);
         var deleteUserAuthControllerTests = new DeleteUserAuthControllerTests(_testFactory);
 
         // Act

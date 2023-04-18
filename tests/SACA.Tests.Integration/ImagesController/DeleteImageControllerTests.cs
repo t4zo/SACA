@@ -1,7 +1,6 @@
 using Bogus;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Newtonsoft.Json;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
 using SACA.Tests.Integration.AuthController;
@@ -26,7 +25,7 @@ public class DeleteImageControllerTests : IClassFixture<TestFactory>
     public async Task<ImageResponse> Should_DeleteUserImage_WhenUserExists(int userId, int imageId)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);

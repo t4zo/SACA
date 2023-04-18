@@ -1,7 +1,6 @@
 using Bogus;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Newtonsoft.Json;
 using SACA.Constants;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
@@ -29,7 +28,7 @@ public class UpdateImageControllerTests : IClassFixture<TestFactory>
     public async Task<ImageResponse> Should_UpdateUserImage_WhenIsUserExists(int userId, int imageId)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
         var getImagesControllerTests = new GetImagesControllerTests(_testFactory);
         
         // Act

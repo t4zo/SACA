@@ -1,17 +1,18 @@
 using FluentAssertions;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
+using SACA.Tests.Integration.UsersController;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.AuthController;
 
-public class SignInUserAuthControllerTests : IClassFixture<TestFactory>
+public class SignInAuthControllerTests : IClassFixture<TestFactory>
 {
     private readonly TestFactory _testFactory;
     private readonly HttpClient _client;
 
-    public SignInUserAuthControllerTests(TestFactory testFactory)
+    public SignInAuthControllerTests(TestFactory testFactory)
     {
         _testFactory = testFactory;
         _client = testFactory.CreateClient();

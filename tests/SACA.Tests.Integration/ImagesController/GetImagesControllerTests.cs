@@ -26,7 +26,7 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
     public async Task Should_GetUserImages_WhenUserExists(int userId)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
@@ -43,7 +43,7 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
     public async Task<ImageResponse> Should_GetImage_WhenIsUserImage(int userId, int imageId)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
         
         // Act
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);
@@ -64,7 +64,7 @@ public class GetImagesControllerTests : IClassFixture<TestFactory>
     public async Task Should_ReturnNotFound_WhenIsNotUserImage(int userId, int imageId)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInUserAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
         
         // Act
         var user = await signInUserAuthControllerTests.Should_SignIn_WhenUserExist(userId);

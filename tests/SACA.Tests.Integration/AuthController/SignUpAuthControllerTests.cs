@@ -2,12 +2,13 @@ using Bogus;
 using FluentAssertions;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
+using SACA.Tests.Integration.UsersController;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.AuthController;
 
-public class CreateUserAuthControllerTests : IClassFixture<TestFactory>
+public class SignUpAuthControllerTests : IClassFixture<TestFactory>
 // [Collection("Test collection")]
 // public class CreateUserAuthControllerTests
 {
@@ -22,7 +23,7 @@ public class CreateUserAuthControllerTests : IClassFixture<TestFactory>
         .RuleFor(x => x.Roles, _ => new List<string> { "User" });
 
 
-    public CreateUserAuthControllerTests(TestFactory testFactory)
+    public SignUpAuthControllerTests(TestFactory testFactory)
     {
         _testFactory = testFactory;
         _client = testFactory.CreateClient();

@@ -2,7 +2,7 @@ using FluentAssertions;
 using SACA.Entities.Identity;
 using System.Net.Http.Json;
 
-namespace SACA.Tests.Integration.AuthController;
+namespace SACA.Tests.Integration.UsersController;
 
 public class GetUserAuthControllerTests : IClassFixture<TestFactory>
 {
@@ -18,7 +18,7 @@ public class GetUserAuthControllerTests : IClassFixture<TestFactory>
     public async Task<ApplicationUser> Should_GetUser_WhenUserExist(int id)
     {
         // Act
-        var user = await _client.GetFromJsonAsync<ApplicationUser>($"v2/Auth/{id}");
+        var user = await _client.GetFromJsonAsync<ApplicationUser>($"v2/Users/{id}");
 
         // Assert
         user.Id.Should().Be(id);
