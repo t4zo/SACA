@@ -9,15 +9,17 @@ using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.UsersController;
 
-public class GetUserAuthControllerTests : IClassFixture<TestFactory>
+[Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
+public class GetUserAuthControllerTests 
+// : IAsyncLifetime
 {
-    private readonly TestFactory _testFactory;
+    private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
 
-    public GetUserAuthControllerTests(TestFactory testFactory)
+    public GetUserAuthControllerTests(IntegrationTestFactory integrationTestFactory)
     {
-        _testFactory = testFactory;
-        _client = testFactory.CreateClient();
+        _integrationTestFactory = integrationTestFactory;
+        _client = integrationTestFactory.HttpClient;
     }
 
     [Theory]
@@ -25,7 +27,7 @@ public class GetUserAuthControllerTests : IClassFixture<TestFactory>
     public async Task<List<UserResponse>> Should_ReturnUsers_WhenUserIsSuperuser(int id)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
@@ -46,7 +48,7 @@ public class GetUserAuthControllerTests : IClassFixture<TestFactory>
     public async Task Should_ReturnForbidden_WhenIsNotSuperuser(int id)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
@@ -71,4 +73,8 @@ public class GetUserAuthControllerTests : IClassFixture<TestFactory>
 
         return user;
     }
+    
+    // public Task InitializeAsync() => Task.CompletedTask;
+    //
+    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
 }

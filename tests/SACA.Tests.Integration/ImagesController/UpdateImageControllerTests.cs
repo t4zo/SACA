@@ -12,24 +12,26 @@ using System.Text;
 
 namespace SACA.Tests.Integration.ImagesController;
 
-public class UpdateImageControllerTests : IClassFixture<TestFactory>
+[Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
+public class UpdateImageControllerTests 
+    // : IAsyncLifetime
 {
-    private readonly TestFactory _testFactory;
+    private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
 
-    public UpdateImageControllerTests(TestFactory testFactory)
+    public UpdateImageControllerTests(IntegrationTestFactory integrationTestFactory)
     {
-        _testFactory = testFactory;
-        _client = testFactory.CreateClient();
+        _integrationTestFactory = integrationTestFactory;
+        _client = integrationTestFactory.HttpClient;
     }
 
     [Theory]
-    [InlineData(1, 100)]
+    [InlineData(1, 19)]
     public async Task<ImageResponse> Should_UpdateUserImage_WhenUserExists(int userId, int imageId)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
-        var getImagesControllerTests = new GetImagesControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
+        var getImagesControllerTests = new GetImagesControllerTests(_integrationTestFactory);
         
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
@@ -54,4 +56,8 @@ public class UpdateImageControllerTests : IClassFixture<TestFactory>
 
         return updatedImageResponse;
     }
+    
+    // public Task InitializeAsync() => Task.CompletedTask;
+    //
+    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
 }

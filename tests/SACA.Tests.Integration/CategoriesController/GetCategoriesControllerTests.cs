@@ -9,20 +9,25 @@ using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.CategoriesController;
 
-public class GetCategoriesControllerTests : IClassFixture<TestFactory>
+[Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
+public class GetCategoriesControllerTests 
+    // : IAsyncLifetime
 {
-    private readonly TestFactory _testFactory;
+    private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
 
-    public GetCategoriesControllerTests(TestFactory testFactory)
+    public GetCategoriesControllerTests(IntegrationTestFactory integrationTestFactory)
     {
-        _testFactory = testFactory;
-        _client = testFactory.CreateClient();
+        _integrationTestFactory = integrationTestFactory;
+        _client = integrationTestFactory.HttpClient;
     }
 
     [Fact]
     public async Task Should_ReturnCategories_WhenUserIsNotAuthenticated()
     {
+        // Arrange
+        _client.DefaultRequestHeaders.Authorization = default;
+        
         // Act
         var response = await _client.GetAsync("v2/Categories");
         
@@ -35,7 +40,7 @@ public class GetCategoriesControllerTests : IClassFixture<TestFactory>
     public async Task Should_ReturnCategories_WhenUserIsAuthenticated(int userId)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
         
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
@@ -52,8 +57,8 @@ public class GetCategoriesControllerTests : IClassFixture<TestFactory>
     public async Task Should_ReturnCategory_WhenCategoryExist(int id)
     {
         // Arrange
-        var createUserAuthControllerTests = new SignUpAuthControllerTests(_testFactory);
-        var deleteUserAuthControllerTests = new DeleteUserAuthControllerTests(_testFactory);
+        var createUserAuthControllerTests = new SignUpAuthControllerTests(_integrationTestFactory);
+        var deleteUserAuthControllerTests = new DeleteUserAuthControllerTests(_integrationTestFactory);
 
         // Act
         var user = await createUserAuthControllerTests.Should_SignUpUser_WhenUserDoesNotExist();
@@ -76,4 +81,8 @@ public class GetCategoriesControllerTests : IClassFixture<TestFactory>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         categoryResponse.Id.Should().Be(id);
     }
+    
+    // public Task InitializeAsync() => Task.CompletedTask;
+    //
+    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
 }

@@ -33,15 +33,6 @@ namespace SACA.Data
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
-
-            optionsBuilder
-                .UseNpgsql(_configuration.GetConnectionString("DefaultConnection"))
-                .UseSnakeCaseNamingConvention();
-        }
-
         //private void UseHiLoStartingSequence(ModelBuilder modelBuilder)
         //{
         //    modelBuilder.HasSequence<int>("DbHiLoSequence").StartsAt(1000).IncrementsBy(1);

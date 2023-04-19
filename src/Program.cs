@@ -22,8 +22,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
     .UseSnakeCaseNamingConvention());
 
-// builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
-
 builder.Services.AddScoped<MapperlyMapper>();
 
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();

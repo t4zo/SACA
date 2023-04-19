@@ -12,9 +12,11 @@ using System.Text;
 
 namespace SACA.Tests.Integration.ImagesController;
 
-public class CreateImageControllerTests : IClassFixture<TestFactory>
+[Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
+public class CreateImageControllerTests 
+    // : IAsyncLifetime
 {
-    private readonly TestFactory _testFactory;
+    private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
 
     private readonly Faker<ImageRequest> _faker = new Faker<ImageRequest>()
@@ -23,10 +25,10 @@ public class CreateImageControllerTests : IClassFixture<TestFactory>
         .RuleFor(x => x.Base64, faker => DatabaseConstants.CatCreate);
 
 
-    public CreateImageControllerTests(TestFactory testFactory)
+    public CreateImageControllerTests(IntegrationTestFactory integrationTestFactory)
     {
-        _testFactory = testFactory;
-        _client = testFactory.CreateClient();
+        _integrationTestFactory = integrationTestFactory;
+        _client = integrationTestFactory.HttpClient;
     }
 
     [Theory]
@@ -34,8 +36,8 @@ public class CreateImageControllerTests : IClassFixture<TestFactory>
     public async Task Should_CreateAndDeleteUserImage_WhenUserExists(int userId)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
-        var deleteImageControllerTests = new DeleteImageControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
+        var deleteImageControllerTests = new DeleteImageControllerTests(_integrationTestFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
@@ -51,7 +53,7 @@ public class CreateImageControllerTests : IClassFixture<TestFactory>
         // Arrange
         var content = _faker.Generate();
 
-        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
@@ -84,7 +86,7 @@ public class CreateImageControllerTests : IClassFixture<TestFactory>
         // Arrange
         var content = _faker.Generate();
 
-        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
@@ -110,7 +112,7 @@ public class CreateImageControllerTests : IClassFixture<TestFactory>
         // Arrange
         var content = _faker.Generate();
 
-        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
@@ -121,4 +123,8 @@ public class CreateImageControllerTests : IClassFixture<TestFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+    
+    // public Task InitializeAsync() => Task.CompletedTask;
+    //
+    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
 }

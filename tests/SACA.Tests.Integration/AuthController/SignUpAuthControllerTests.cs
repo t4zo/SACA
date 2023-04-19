@@ -8,11 +8,11 @@ using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.AuthController;
 
-public class SignUpAuthControllerTests : IClassFixture<TestFactory>
-// [Collection("Test collection")]
-// public class CreateUserAuthControllerTests
+[Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
+public class SignUpAuthControllerTests 
+    // : IAsyncLifetime
 {
-    private readonly TestFactory _testFactory;
+    private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
 
     private readonly Faker<SignUpRequest> _faker = new Faker<SignUpRequest>()
@@ -23,17 +23,17 @@ public class SignUpAuthControllerTests : IClassFixture<TestFactory>
         .RuleFor(x => x.Roles, _ => new List<string> { "User" });
 
 
-    public SignUpAuthControllerTests(TestFactory testFactory)
+    public SignUpAuthControllerTests(IntegrationTestFactory integrationTestFactory)
     {
-        _testFactory = testFactory;
-        _client = testFactory.CreateClient();
+        _integrationTestFactory = integrationTestFactory;
+        _client = integrationTestFactory.HttpClient;
     }
     
     [Fact]
     public async Task Should_CreateAndDeleteUser_WhenUserDoesNotExist()
     {
         // Arrange
-        var deleteUserAuthControllerTests = new DeleteUserAuthControllerTests(_testFactory);
+        var deleteUserAuthControllerTests = new DeleteUserAuthControllerTests(_integrationTestFactory);
         
         // Act
         var createdUser = await Should_SignUpUser_WhenUserDoesNotExist();
@@ -57,4 +57,8 @@ public class SignUpAuthControllerTests : IClassFixture<TestFactory>
 
         return userResponse;
     }
+    
+    // public Task InitializeAsync() => Task.CompletedTask;
+    //
+    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
 }

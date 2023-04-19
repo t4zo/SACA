@@ -8,21 +8,23 @@ using System.Net.Http.Json;
 
 namespace SACA.Tests.Integration.UsersController;
 
-public class DeleteUserAuthControllerTests : IClassFixture<TestFactory>
+[Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
+public class DeleteUserAuthControllerTests 
+    // : IAsyncLifetime
 {
-    private readonly TestFactory _testFactory;
+    private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
 
-    public DeleteUserAuthControllerTests(TestFactory testFactory)
+    public DeleteUserAuthControllerTests(IntegrationTestFactory integrationTestFactory)
     {
-        _testFactory = testFactory;
-        _client = testFactory.CreateClient();
+        _integrationTestFactory = integrationTestFactory;
+        _client = integrationTestFactory.HttpClient;
     }
     
     public async Task<UserResponse> Should_DeleteUser_WhenUserExist(int id)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
@@ -43,7 +45,7 @@ public class DeleteUserAuthControllerTests : IClassFixture<TestFactory>
     public async Task Should_ReturnForbidden_WhenUserIsNotSuperuser(int id)
     {
         // Arrange
-        var signInUserAuthControllerTests = new SignInAuthControllerTests(_testFactory);
+        var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
@@ -54,4 +56,8 @@ public class DeleteUserAuthControllerTests : IClassFixture<TestFactory>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+    
+    // public Task InitializeAsync() => Task.CompletedTask;
+    //
+    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
 }
