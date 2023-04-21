@@ -1,6 +1,7 @@
 ﻿#if !DEBUG
 using Microsoft.EntityFrameworkCore;
 using SACA.Data;
+using SACA.Data.Seed;
 using SACA.Data.Seed.Models;
 using SACA.Interfaces;
 
@@ -23,8 +24,8 @@ namespace SACA.Extensions
 
                 var s3Service = scope.ServiceProvider.GetRequiredService<IS3Service>();
 
-                await new CategoriesSeed(context).LoadAsync();
-                await new ImagesSeed(context, s3Service, new MapperlyMapper()).LoadAsync();
+                await new CategoriesSeed(context).LoadAsync(new LoadAsyncOptions { UploadImage = true });
+                await new ImagesSeed(context, s3Service, new MapperlyMapper()).LoadAsync(new LoadAsyncOptions { UploadImage = true });
             }
             catch (Exception ex)
             {

@@ -9,8 +9,7 @@ using System.Net.Http.Json;
 namespace SACA.Tests.Integration.UsersController;
 
 [Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
-public class DeleteUserAuthControllerTests 
-    // : IAsyncLifetime
+public class DeleteUserAuthControllerTests : IAsyncLifetime
 {
     private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
@@ -19,6 +18,7 @@ public class DeleteUserAuthControllerTests
     {
         _integrationTestFactory = integrationTestFactory;
         _client = integrationTestFactory.HttpClient;
+        _client.DefaultRequestHeaders.Authorization = default;
     }
     
     public async Task<UserResponse> Should_DeleteUser_WhenUserExist(int id)
@@ -57,7 +57,7 @@ public class DeleteUserAuthControllerTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
     
-    // public Task InitializeAsync() => Task.CompletedTask;
-    //
-    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
+    
+    public async Task DisposeAsync() => await _integrationTestFactory.ResetDatabaseAsync();
 }

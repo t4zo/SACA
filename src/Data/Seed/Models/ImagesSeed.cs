@@ -18,7 +18,7 @@ namespace SACA.Data.Seed.Models
             _mapper = mapper;
         }
 
-        public override async Task LoadAsync()
+        public override async Task LoadAsync(LoadAsyncOptions loadAsyncOptions = null)
         {
             var dbSet = _context.Set<Image>();
 
@@ -37,7 +37,14 @@ namespace SACA.Data.Seed.Models
                     var imageDto = _mapper.MapToImageRequest(image);
                     imageDto.Base64 = image.Url;
 
-                    image.Url = await _s3Service.UploadSharedFileAsync(imageDto.Base64, imageDto.Name);
+                    if (loadAsyncOptions is not null && loadAsyncOptions.UploadImage)
+                    {
+                        image.Url = await _s3Service.UploadSharedFileAsync(imageDto.Base64, imageDto.Name);
+                    }
+                    else
+                    {
+                        image.Url = "https://placekitten.com/200/300";
+                    }
 
                     await dbSet.AddAsync(image);
                 }

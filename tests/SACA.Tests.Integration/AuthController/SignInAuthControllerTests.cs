@@ -8,8 +8,7 @@ using System.Net.Http.Json;
 namespace SACA.Tests.Integration.AuthController;
 
 [Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
-public class SignInAuthControllerTests 
-    // : IAsyncLifetime
+public class SignInAuthControllerTests : IAsyncLifetime
 {
     private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
@@ -18,6 +17,7 @@ public class SignInAuthControllerTests
     {
         _integrationTestFactory = integrationTestFactory;
         _client = integrationTestFactory.HttpClient;
+        _client.DefaultRequestHeaders.Authorization = default;
     }
     
     public async Task<UserResponse> Should_SignInUser_WhenUserExist(int id)
@@ -43,7 +43,7 @@ public class SignInAuthControllerTests
         return userResponse;
     }
 
-    // public Task InitializeAsync() => Task.CompletedTask;
-    //
-    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
+    
+    public async Task DisposeAsync() => await _integrationTestFactory.ResetDatabaseAsync();
 }

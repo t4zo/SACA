@@ -9,8 +9,7 @@ using System.Net.Http.Json;
 namespace SACA.Tests.Integration.AuthController;
 
 [Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
-public class SignUpAuthControllerTests 
-    // : IAsyncLifetime
+public class SignUpAuthControllerTests : IAsyncLifetime
 {
     private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
@@ -27,6 +26,7 @@ public class SignUpAuthControllerTests
     {
         _integrationTestFactory = integrationTestFactory;
         _client = integrationTestFactory.HttpClient;
+        _client.DefaultRequestHeaders.Authorization = default;
     }
     
     [Fact]
@@ -58,7 +58,7 @@ public class SignUpAuthControllerTests
         return userResponse;
     }
     
-    // public Task InitializeAsync() => Task.CompletedTask;
-    //
-    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
+    
+    public async Task DisposeAsync() => await _integrationTestFactory.ResetDatabaseAsync();
 }

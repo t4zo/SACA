@@ -13,8 +13,7 @@ using System.Text;
 namespace SACA.Tests.Integration.ImagesController;
 
 [Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
-public class UpdateImageControllerTests 
-    // : IAsyncLifetime
+public class UpdateImageControllerTests : IAsyncLifetime
 {
     private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
@@ -23,6 +22,7 @@ public class UpdateImageControllerTests
     {
         _integrationTestFactory = integrationTestFactory;
         _client = integrationTestFactory.HttpClient;
+        _client.DefaultRequestHeaders.Authorization = default;
     }
 
     [Theory]
@@ -57,7 +57,7 @@ public class UpdateImageControllerTests
         return updatedImageResponse;
     }
     
-    // public Task InitializeAsync() => Task.CompletedTask;
-    //
-    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
+    
+    public async Task DisposeAsync() => await _integrationTestFactory.ResetDatabaseAsync();
 }

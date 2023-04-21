@@ -12,8 +12,7 @@ using System.Text;
 namespace SACA.Tests.Integration.ImagesController;
 
 [Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
-public class DeleteImageControllerTests 
-    // : IAsyncLifetime
+public class DeleteImageControllerTests : IAsyncLifetime
 {
     private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
@@ -22,6 +21,7 @@ public class DeleteImageControllerTests
     {
         _integrationTestFactory = integrationTestFactory;
         _client = integrationTestFactory.HttpClient;
+        _client.DefaultRequestHeaders.Authorization = default;
     }
     
     public async Task<ImageResponse> Should_DeleteUserImage_WhenUserExists(int userId, int imageId)
@@ -43,7 +43,7 @@ public class DeleteImageControllerTests
         return deletedImageResponse;
     }
     
-    // public Task InitializeAsync() => Task.CompletedTask;
-    //
-    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
+    
+    public async Task DisposeAsync() => await _integrationTestFactory.ResetDatabaseAsync();
 }

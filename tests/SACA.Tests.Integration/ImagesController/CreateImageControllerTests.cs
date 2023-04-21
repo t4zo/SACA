@@ -13,8 +13,7 @@ using System.Text;
 namespace SACA.Tests.Integration.ImagesController;
 
 [Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
-public class CreateImageControllerTests 
-    // : IAsyncLifetime
+public class CreateImageControllerTests : IAsyncLifetime
 {
     private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
@@ -29,6 +28,7 @@ public class CreateImageControllerTests
     {
         _integrationTestFactory = integrationTestFactory;
         _client = integrationTestFactory.HttpClient;
+        _client.DefaultRequestHeaders.Authorization = default;
     }
 
     [Theory]
@@ -124,7 +124,7 @@ public class CreateImageControllerTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
     
-    // public Task InitializeAsync() => Task.CompletedTask;
-    //
-    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
+    
+    public async Task DisposeAsync() => await _integrationTestFactory.ResetDatabaseAsync();
 }

@@ -11,8 +11,7 @@ using System.Net.Http.Json;
 namespace SACA.Tests.Integration.ImagesController;
 
 [Collection(IntegrationTestCollectionConstants.CollectionDefinitionName)]
-public class GetImagesControllerTests 
-    // : IAsyncLifetime
+public class GetImagesControllerTests : IAsyncLifetime
 {
     private readonly IntegrationTestFactory _integrationTestFactory;
     private readonly HttpClient _client;
@@ -21,6 +20,7 @@ public class GetImagesControllerTests
     {
         _integrationTestFactory = integrationTestFactory;
         _client = integrationTestFactory.HttpClient;
+        _client.DefaultRequestHeaders.Authorization = default;
     }
     
     [Theory]
@@ -93,7 +93,7 @@ public class GetImagesControllerTests
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
     
-    // public Task InitializeAsync() => Task.CompletedTask;
-    //
-    // public async Task DisposeAsync() => await _testFactory.ResetDatabaseAsync();
+    public Task InitializeAsync() => Task.CompletedTask;
+    
+    public async Task DisposeAsync() => await _integrationTestFactory.ResetDatabaseAsync();
 }
