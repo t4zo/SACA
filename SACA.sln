@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SACA.UnitTests", "tests\SAC
 		{2B2CD058-8C16-4315-88BA-12B9506E6618} = {2B2CD058-8C16-4315-88BA-12B9506E6618}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SACA.Tests.Integration", "tests\SACA.Tests.Integration\SACA.Tests.Integration.csproj", "{689B8E91-6249-45D1-8776-6E01BB7E14A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,6 +30,10 @@ Global
 		{216B3E4C-4062-4C7A-9FDA-BFFE4CA73666}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{216B3E4C-4062-4C7A-9FDA-BFFE4CA73666}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{216B3E4C-4062-4C7A-9FDA-BFFE4CA73666}.Release|Any CPU.Build.0 = Release|Any CPU
+		{689B8E91-6249-45D1-8776-6E01BB7E14A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{689B8E91-6249-45D1-8776-6E01BB7E14A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{689B8E91-6249-45D1-8776-6E01BB7E14A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{689B8E91-6249-45D1-8776-6E01BB7E14A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -35,6 +41,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{2B2CD058-8C16-4315-88BA-12B9506E6618} = {3F505FA5-CF16-4AB9-B6B8-7B14C0C988D4}
 		{216B3E4C-4062-4C7A-9FDA-BFFE4CA73666} = {D522906D-4913-43C6-88D3-F09FE3402022}
+		{689B8E91-6249-45D1-8776-6E01BB7E14A2} = {D522906D-4913-43C6-88D3-F09FE3402022}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5A8E508C-36E9-4976-AEEF-D0CD92AA6973}

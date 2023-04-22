@@ -8,16 +8,10 @@ namespace SACA.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, int>
     {
-        private readonly IConfiguration _configuration;
-
         public DbSet<Category> Categories { get; set; }
         public DbSet<Image> Images { get; set; }
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IConfiguration configuration)
-            : base(options)
-        {
-            _configuration = configuration;
-        }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -31,15 +25,6 @@ namespace SACA.Data
             }
 
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
-
-            optionsBuilder
-                .UseNpgsql(_configuration.GetConnectionString("DefaultConnection"))
-                .UseSnakeCaseNamingConvention();
         }
 
         //private void UseHiLoStartingSequence(ModelBuilder modelBuilder)

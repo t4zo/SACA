@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SACA.Entities;
 using SACA.Extensions;
+using SACA.Interfaces;
 using SACA.Repositories.Interfaces;
 
 namespace SACA.Controllers

@@ -1,7 +1,5 @@
-﻿using AutoMapper;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using SACA.Entities;
-using SACA.Entities.Requests;
 using SACA.Interfaces;
 using System.Reflection;
 using System.Text;
@@ -11,16 +9,16 @@ namespace SACA.Data.Seed.Models
     public class ImagesSeed : EntitySeed<Image>
     {
         private readonly IS3Service _s3Service;
-        private readonly IMapper _mapper;
+        private readonly MapperlyMapper _mapper;
 
-        public ImagesSeed(ApplicationDbContext context, IS3Service s3Service, IMapper mapper) : base(context,
+        public ImagesSeed(ApplicationDbContext context, IS3Service s3Service, MapperlyMapper mapper) : base(context,
             "SACA.Data.Seed.Json.01Images.json")
         {
             _s3Service = s3Service;
             _mapper = mapper;
         }
 
-        public override async Task LoadAsync()
+        public override async Task LoadAsync(LoadAsyncOptions loadAsyncOptions = null)
         {
             var dbSet = _context.Set<Image>();
 
@@ -36,10 +34,17 @@ namespace SACA.Data.Seed.Models
 
                 foreach (var image in images)
                 {
-                    var imageDto = _mapper.Map<ImageRequest>(image);
+                    var imageDto = _mapper.MapToImageRequest(image);
                     imageDto.Base64 = image.Url;
 
-                    image.Url = await _s3Service.UploadSharedFileAsync(imageDto.Base64, imageDto.Name);
+                    if (loadAsyncOptions is not null && loadAsyncOptions.UploadImage)
+                    {
+                        image.Url = await _s3Service.UploadSharedFileAsync(imageDto.Base64, imageDto.Name);
+                    }
+                    else
+                    {
+                        image.Url = "https://placekitten.com/200/300";
+                    }
 
                     await dbSet.AddAsync(image);
                 }

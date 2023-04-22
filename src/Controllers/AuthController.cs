@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SACA.Constants;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
 using SACA.Extensions;
@@ -12,7 +12,7 @@ namespace SACA.Controllers
     public class AuthController : BaseApiController
     {
         private readonly IS3Service _s3Service;
-        private readonly IMapper _mapper;
+        private readonly MapperlyMapper _mapper;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUnityOfWork _uow;
@@ -21,7 +21,7 @@ namespace SACA.Controllers
         public AuthController(
             IUserService userService,
             IS3Service s3Service,
-            IMapper mapper,
+            MapperlyMapper mapper,
             ICategoryRepository categoryRepository,
             IUserRepository userRepository,
             IUnityOfWork unityOfWork
@@ -71,6 +71,29 @@ namespace SACA.Controllers
                 return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = argumentException.Message });
             }
         }
+        
+        [AllowAnonymous]
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserResponse>> Get(int id)
+        {
+            try
+            {
+                var applicationUser = await _userRepository.GetUserAsync(id);
+                if (applicationUser is null)
+                {
+                    return BadRequest();
+                }
+                
+                var userResponse = _mapper.MapToUserResponse(applicationUser);
+                userResponse.Roles = await _userService.GetRolesAsync(applicationUser);
+
+                return userResponse;
+            }
+            catch (ArgumentException argumentException)
+            {
+                return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = argumentException.Message });
+            }
+        }
 
         [HttpDelete("user")]
         public async Task<ActionResult<UserResponse>> Remove()
@@ -92,7 +115,25 @@ namespace SACA.Controllers
 
             await _uow.SaveChangesAsync();
 
-            return _mapper.Map<UserResponse>(user);
+            return _mapper.MapToUserResponse(user);
+        }
+
+        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
+        [HttpDelete("user/{id}")]
+        public async Task<ActionResult<UserResponse>> Remove(int id)
+        {
+            var user = await _userRepository.GetUserAsync(id);
+            if (user is null)
+            {
+                return BadRequest();
+            }
+
+            await _s3Service.RemoveFolderAsync(user.Id.ToString());
+            await _userService.DeleteAsync(user);
+
+            await _uow.SaveChangesAsync();
+
+            return _mapper.MapToUserResponse(user);
         }
     }
 }

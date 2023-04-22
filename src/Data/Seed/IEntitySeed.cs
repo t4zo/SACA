@@ -2,6 +2,6 @@
 {
     public interface IEntitySeed
     {
-        Task LoadAsync();
+        Task LoadAsync(LoadAsyncOptions loadAsyncOptions = null);
     }
 }

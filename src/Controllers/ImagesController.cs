@@ -1,7 +1,7 @@
-﻿using AutoMapper;
-using ImageMagick;
+﻿using ImageMagick;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SACA.Entities;
+using SACA.Constants;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
 using SACA.Extensions;
@@ -14,13 +14,14 @@ namespace SACA.Controllers
     {
         private readonly IImageService _imageService;
         private readonly IS3Service _s3Service;
-        private readonly IMapper _mapper;
+        private readonly MapperlyMapper _mapper;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IImageRepository _imageRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUnityOfWork _uow;
 
-        public ImagesController(IImageService imageService, IS3Service s3Service, IMapper mapper, ICategoryRepository categoryRepository, IImageRepository imageRepository, IUserRepository userRepository, IUnityOfWork uow)
+        public ImagesController(IImageService imageService, IS3Service s3Service, MapperlyMapper mapper, ICategoryRepository categoryRepository, IImageRepository imageRepository,
+            IUserRepository userRepository, IUnityOfWork uow)
         {
             _imageService = imageService;
             _s3Service = s3Service;
@@ -42,12 +43,12 @@ namespace SACA.Controllers
 
             var imageResponse = await _imageRepository.GetUserImageAsync(userId.Value);
 
-                if (imageResponse is null)
-                {
-                    return NotFound();
-                }
+            if (imageResponse is null)
+            {
+                return NotFound();
+            }
 
-                return Ok(imageResponse);
+            return Ok(imageResponse);
         }
 
         [HttpGet("{id}")]
@@ -58,7 +59,7 @@ namespace SACA.Controllers
             {
                 return NoContent();
             }
-            
+
             var imageResponse = await _imageRepository.GetUserImageAsync(userId.Value, id);
 
             if (imageResponse is null)
@@ -72,7 +73,7 @@ namespace SACA.Controllers
         [HttpPost]
         public async Task<ActionResult<ImageResponse>> Create(ImageRequest imageRequest)
         {
-            var image = _mapper.Map<Image>(imageRequest);
+            var image = _mapper.MapToImage(imageRequest);
 
             image.UserId = User.GetId();
             if (image.UserId is null)
@@ -101,7 +102,7 @@ namespace SACA.Controllers
 
             await _uow.SaveChangesAsync();
 
-            return Ok(_mapper.Map<ImageResponse>(image));
+            return Ok(_mapper.MapToImageResponse(image));
         }
 
         [HttpPut("{id}")]
@@ -112,6 +113,7 @@ namespace SACA.Controllers
                 return NotFound("The image was not found");
                 // throw new ImageNotFoundException("The image was not found");
             }
+
             var originalImage = await _imageRepository.GetAsync(id);
 
             if (originalImage is null)
@@ -125,7 +127,7 @@ namespace SACA.Controllers
             {
                 return NoContent();
             }
-            
+
             var user = await _userRepository.GetUserAsync(userId.Value);
 
             await _s3Service.RemoveFileAsync(originalImage.Url);
@@ -135,14 +137,14 @@ namespace SACA.Controllers
 
             imageRequest.Base64 = magickImage.ToBase64();
 
-            var image = _mapper.Map<Image>(originalImage);
+            var image = _mapper.MapToImage(originalImage);
             image.Name = imageRequest.Name;
 
             image.Url = await _s3Service.UploadUserFileAsync(imageRequest.Base64, user.Id.ToString());
 
             await _uow.SaveChangesAsync();
 
-            return Ok(_mapper.Map<ImageResponse>(image));
+            return Ok(_mapper.MapToImageResponse(image));
         }
 
         [HttpDelete("{id}")]
@@ -159,13 +161,14 @@ namespace SACA.Controllers
             _imageRepository.Remove(image);
             await _uow.SaveChangesAsync();
 
-            return Ok(_mapper.Map<ImageResponse>(image));
+            return Ok(_mapper.MapToImageResponse(image));
         }
 
+        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpPost("superuser")]
-        public async Task<ActionResult<ImageResponse>> CreateAdmin(ImageRequest imageRequest)
+        public async Task<ActionResult<ImageResponse>> SuperuserCreateImage(ImageRequest imageRequest)
         {
-            var image = _mapper.Map<Image>(imageRequest);
+            var image = _mapper.MapToImage(imageRequest);
 
             using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
             imageRequest.Base64 = _imageService.Resize(magickImage, 110, 150).ToBase64();
@@ -175,11 +178,12 @@ namespace SACA.Controllers
             await _imageRepository.AddAsync(image);
             await _uow.SaveChangesAsync();
 
-            return Ok(_mapper.Map<ImageResponse>(image));
+            return Ok(_mapper.MapToImageResponse(image));
         }
 
+        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpDelete("superuser/{id}")]
-        public async Task<ActionResult<ImageResponse>> RemoveAdmin(int id)
+        public async Task<ActionResult<ImageResponse>> SuperuserRemoveImage(int id)
         {
             var image = await _imageRepository.GetAsync(id);
             if (image is null)
@@ -192,7 +196,7 @@ namespace SACA.Controllers
             _imageRepository.Remove(image);
             await _uow.SaveChangesAsync();
 
-            return Ok(_mapper.Map<ImageResponse>(image));
+            return Ok(_mapper.MapToImageResponse(image));
         }
     }
 }

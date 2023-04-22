@@ -5,6 +5,11 @@ using System.Text.Json;
 
 namespace SACA.Data.Seed
 {
+    public class LoadAsyncOptions
+    {
+        public bool UploadImage { get; set; }
+    }
+    
     public class EntitySeed<TEntity> : IEntitySeed where TEntity : class
     {
         protected readonly ApplicationDbContext _context;
@@ -17,7 +22,7 @@ namespace SACA.Data.Seed
             RessourceName = ressourceName;
         }
 
-        public virtual async Task LoadAsync()
+        public virtual async Task LoadAsync(LoadAsyncOptions loadAsyncOptions = null)
         {
             var dbSet = _context.Set<TEntity>();
 

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SACA.Constants;
 using SACA.Entities.Identity;
@@ -13,12 +12,12 @@ namespace SACA.Services
 {
     public class UserService : IUserService
     {
-        private readonly IMapper _mapper;
+        private readonly MapperlyMapper _mapper;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ITokenService _tokenService;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ITokenService tokenService, IMapper mapper)
+        public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ITokenService tokenService, MapperlyMapper mapper)
         {
             _tokenService = tokenService;
             _userManager = userManager;
@@ -85,7 +84,7 @@ namespace SACA.Services
 
             var token = _tokenService.GenerateJWTToken(claimsIdentity);
 
-            var userResponse = _mapper.Map<UserResponse>(user);
+            var userResponse = _mapper.MapToUserResponse(user);
 
             userResponse.Roles = roles;
             userResponse.Token = token;
