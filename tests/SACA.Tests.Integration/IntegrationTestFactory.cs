@@ -13,6 +13,7 @@ using SACA.Data.Seed;
 using SACA.Data.Seed.Models;
 using SACA.Extensions;
 using SACA.Interfaces;
+using SACA.Utilities;
 
 namespace SACA.Tests.Integration;
 
@@ -120,7 +121,6 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
     public async Task ResetDatabaseAsync()
     {
         await Respawner.ResetAsync(Context.Database.GetDbConnection());
-        // Context.Users.FromSqlRaw($"ALTER SEQUENCE aspnetusers_id_seq RESTART WITH 1;");
         ReseedTestDatabase();
     }
 }
