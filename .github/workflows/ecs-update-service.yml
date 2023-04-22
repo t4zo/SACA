@@ -7,9 +7,9 @@ on:
     branches: 
       - main
 
-#   pull_request:
-#     branches: 
-#       - main
+  pull_request:
+    branches: 
+      - main
 
 jobs:
   docker:
@@ -21,8 +21,21 @@ jobs:
     env:
       DOCKERHUB_USER_IMAGE_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_WITH_TAG }}
       GITHUB_USER_IMAGE_TAG: ${{ github.repository_owner }}/${{ secrets.DOCKERHUB_IMAGE_WITH_TAG }}
+    
+    strategy:
+      matrix:
+        dotnet-version: [ '6.0.x' ]
 
     steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      
+      - name: Run Tests
+        run: dotnet test -c Release --verbosity normal
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
