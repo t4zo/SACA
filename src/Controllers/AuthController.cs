@@ -57,11 +57,10 @@ namespace SACA.Controllers
             {
                 var applicationUser = await _userService.SignUpAsync(signUpRequest);
                 await _userService.AssignRolesAsync(applicationUser, signUpRequest.Roles);
+                
                 var userResponse = await _userService.LogInAsync(signUpRequest.Email, signUpRequest.Password);
-
                 var user = await _userRepository.GetUserAsync(userResponse.Id);
                 user.Categories = await _categoryRepository.GetCommonCategoriesAsync();
-
                 await _uow.SaveChangesAsync();
 
                 return userResponse;
@@ -71,10 +70,65 @@ namespace SACA.Controllers
                 return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = argumentException.Message });
             }
         }
+
+        [HttpDelete("user")]
+        public async Task<ActionResult<UserResponse>> Remove()
+        {
+            try
+            {
+                var userId = User.GetId();
+                if (!userId.HasValue)
+                {
+                    return BadRequest();
+                }
+
+                var user = await _userRepository.GetUserAsync(userId.Value);
+                if (user is null)
+                {
+                    return BadRequest();
+                }
+
+                await _s3Service.RemoveFolderAsync(user.Id.ToString());
+                await _userService.DeleteAsync(user);
+
+                await _uow.SaveChangesAsync();
+
+                return _mapper.MapToUserResponse(user);
+            }
+            catch (Exception exception)
+            {
+                return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = exception.Message });
+            }
+        }
+
+        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
+        [HttpDelete("user/{id}")]
+        public async Task<ActionResult<UserResponse>> Remove(int id)
+        {
+            try
+            {
+                var user = await _userRepository.GetUserAsync(id);
+                if (user is null)
+                {
+                    return BadRequest();
+                }
+
+                await _s3Service.RemoveFolderAsync(user.Id.ToString());
+                await _userService.DeleteAsync(user);
+
+                await _uow.SaveChangesAsync();
+
+                return _mapper.MapToUserResponse(user);
+            }
+            catch (Exception exception)
+            {
+                return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = exception.Message });
+            }
+        }
         
         [AllowAnonymous]
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserResponse>> Get(int id)
+        internal async Task<ActionResult<UserResponse>> Get(int id)
         {
             try
             {
@@ -93,47 +147,6 @@ namespace SACA.Controllers
             {
                 return BadRequest(new ProblemDetails { Title = nameof(BadRequest), Detail = argumentException.Message });
             }
-        }
-
-        [HttpDelete("user")]
-        public async Task<ActionResult<UserResponse>> Remove()
-        {
-            var userId = User.GetId();
-            if (!userId.HasValue)
-            {
-                return BadRequest();
-            }
-
-            var user = await _userRepository.GetUserAsync(userId.Value);
-            if (user is null)
-            {
-                return BadRequest();
-            }
-
-            await _s3Service.RemoveFolderAsync(user.Id.ToString());
-            await _userService.DeleteAsync(user);
-
-            await _uow.SaveChangesAsync();
-
-            return _mapper.MapToUserResponse(user);
-        }
-
-        [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
-        [HttpDelete("user/{id}")]
-        public async Task<ActionResult<UserResponse>> Remove(int id)
-        {
-            var user = await _userRepository.GetUserAsync(id);
-            if (user is null)
-            {
-                return BadRequest();
-            }
-
-            await _s3Service.RemoveFolderAsync(user.Id.ToString());
-            await _userService.DeleteAsync(user);
-
-            await _uow.SaveChangesAsync();
-
-            return _mapper.MapToUserResponse(user);
         }
     }
 }

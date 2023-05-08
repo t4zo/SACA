@@ -36,13 +36,12 @@ namespace SACA.Controllers
         public async Task<ActionResult<ImageResponse>> Get()
         {
             var userId = User.GetId();
-            if (userId is null)
+            if (!userId.HasValue)
             {
                 return NoContent();
             }
 
             var imageResponse = await _imageRepository.GetUserImageAsync(userId.Value);
-
             if (imageResponse is null)
             {
                 return NotFound();
@@ -55,13 +54,12 @@ namespace SACA.Controllers
         public async Task<ActionResult<ImageResponse>> Get(int id)
         {
             var userId = User.GetId();
-            if (userId is null)
+            if (!userId.HasValue)
             {
                 return NoContent();
             }
 
             var imageResponse = await _imageRepository.GetUserImageAsync(userId.Value, id);
-
             if (imageResponse is null)
             {
                 return NotFound();
@@ -73,33 +71,26 @@ namespace SACA.Controllers
         [HttpPost]
         public async Task<ActionResult<ImageResponse>> Create(ImageRequest imageRequest)
         {
-            var image = _mapper.MapToImage(imageRequest);
-
-            image.UserId = User.GetId();
-            if (image.UserId is null)
+            var userId = User.GetId();
+            if (!userId.HasValue)
             {
                 return NoContent();
             }
+            
+            var image = _mapper.MapToImage(imageRequest);
+            var applicationUser = await _userRepository.GetUserCategoryAsync(userId.Value);
+            image.UserId = userId.Value;
+            
+            var resizedImage = _imageService.Resize(new MagickImage(Convert.FromBase64String(imageRequest.Base64))).ToBase64();
+            image.Url = await _s3Service.UploadUserFileAsync(resizedImage, applicationUser.Id.ToString());
 
-            var user = await _userRepository.GetUserCategoryAsync(image.UserId.Value);
-
-            using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
-            magickImage.Resize(110, 150);
-
-            imageRequest.Base64 = magickImage.ToBase64();
-
-            image.Url = await _s3Service.UploadUserFileAsync(imageRequest.Base64, user.Id.ToString());
-
-            await _imageRepository.AddAsync(image);
-
-            var category = await _categoryRepository.GetCategoryUserAsync(image.CategoryId);
-
-            var userCategoryExists = user.Categories.Any(x => x.Id == category.Id);
-            if (!userCategoryExists)
+            var category = await _categoryRepository.GetCategoryAsync(image.CategoryId);
+            if (applicationUser.Categories.All(x => x.Id != category.Id))
             {
-                category.ApplicationUsers.Add(user);
+                category.ApplicationUsers.Add(applicationUser);
             }
-
+            
+            await _imageRepository.AddAsync(image);
             await _uow.SaveChangesAsync();
 
             return Ok(_mapper.MapToImageResponse(image));
@@ -110,37 +101,29 @@ namespace SACA.Controllers
         {
             if (id != imageRequest.Id)
             {
-                return NotFound("The image was not found");
-                // throw new ImageNotFoundException("The image was not found");
-            }
-
-            var originalImage = await _imageRepository.GetAsync(id);
-
-            if (originalImage is null)
-            {
-                return NotFound("The image was not found");
-                // throw new ImageNotFoundException("The image was not found");
+                return NotFound("Image was not found");
             }
 
             var userId = User.GetId();
-            if (userId is null)
+            if (!userId.HasValue)
             {
                 return NoContent();
             }
+            
+            var originalImage = await _imageRepository.GetAsync(id);
+            if (originalImage is null)
+            {
+                return NotFound("Image was not found");
+            }
 
-            var user = await _userRepository.GetUserAsync(userId.Value);
+            var applicationUser = await _userRepository.GetUserAsync(userId.Value);
+            var image = _mapper.MapToImage(originalImage);
+            var resizedImage = _imageService.Resize(new MagickImage(Convert.FromBase64String(imageRequest.Base64))).ToBase64();
 
             await _s3Service.RemoveFileAsync(originalImage.Url);
 
-            using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
-            magickImage.Resize(110, 150);
-
-            imageRequest.Base64 = magickImage.ToBase64();
-
-            var image = _mapper.MapToImage(originalImage);
             image.Name = imageRequest.Name;
-
-            image.Url = await _s3Service.UploadUserFileAsync(imageRequest.Base64, user.Id.ToString());
+            image.Url = await _s3Service.UploadUserFileAsync(resizedImage, applicationUser.Id.ToString());
 
             await _uow.SaveChangesAsync();
 
@@ -170,10 +153,8 @@ namespace SACA.Controllers
         {
             var image = _mapper.MapToImage(imageRequest);
 
-            using var magickImage = new MagickImage(Convert.FromBase64String(imageRequest.Base64));
-            imageRequest.Base64 = _imageService.Resize(magickImage, 110, 150).ToBase64();
-
-            image.Url = await _s3Service.UploadSharedFileAsync(imageRequest.Base64);
+            var resizedImage = _imageService.Resize(new MagickImage(Convert.FromBase64String(imageRequest.Base64))).ToBase64();
+            image.Url = await _s3Service.UploadSharedFileAsync(resizedImage);
 
             await _imageRepository.AddAsync(image);
             await _uow.SaveChangesAsync();

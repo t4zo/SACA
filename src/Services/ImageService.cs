@@ -5,14 +5,24 @@ namespace SACA.Services
 {
     public class ImageService : IImageService
     {
-        public MagickImage Resize(MagickImage image, int width, int height)
+        public MagickImage Resize(MagickImage image)
         {
-            var size = new MagickGeometry(width, height)
+            // image.Resize(110, 150);
+            image.Resize(new MagickGeometry(110, 150)
             {
-                IgnoreAspectRatio = true
-            };
+                IgnoreAspectRatio = false,
+            });
 
-            image.Resize(size);
+            return image;
+        }
+        
+        public MagickImage Resize(MagickImage image, int width = 110, int height = 150)
+        {
+            // image.Resize(width, height);
+            image.Resize(new MagickGeometry(width, height)
+            {
+                IgnoreAspectRatio = false,
+            });
 
             return image;
         }

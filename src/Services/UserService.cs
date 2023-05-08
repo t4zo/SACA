@@ -36,7 +36,6 @@ namespace SACA.Services
             var result = await _userManager.CreateAsync(user, signUpRequest.Password);
             if (!result.Succeeded)
             {
-                //throw new ArgumentException("Erro ao criar usuário, email e/ou senha inválido(s)");
                 throw new ArgumentException(result.Errors.First().Description);
             }
 
@@ -63,6 +62,10 @@ namespace SACA.Services
         public async Task<UserResponse> LogInAsync(string username, string password, bool remember)
         {
             var user = await _userManager.FindByNameAsync(username) ?? await _userManager.FindByEmailAsync(username);
+            if (user is null)
+            { 
+                throw new ArgumentException("Usuário e/ou senha inválido(s)");
+            }
 
             var result = await _signInManager.PasswordSignInAsync(user.UserName, password, remember, false);
             if (!result.Succeeded)

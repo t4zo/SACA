@@ -8,6 +8,6 @@ namespace SACA.Repositories.Interfaces
         Task<List<Category>> GetUserCategoriesAsync(IQueryable<Category> baseQuery, int userId);
         Task<Category> GetUserCategoryAsync(int userId, int categoryId);
         Task<List<Category>> GetCommonCategoriesAsync();
-        Task<Category> GetCategoryUserAsync(int categoryId);
+        Task<Category> GetCategoryAsync(int categoryId);
     }
 }

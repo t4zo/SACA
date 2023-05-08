@@ -20,14 +20,7 @@ namespace SACA.Repositories
                 .AsNoTracking()
                 .Include(x => x.Images);
         }
-
-        public async Task<Category> GetCategoryUserAsync(int categoryId)
-        {
-            return await _context.Categories
-                .Include(x => x.ApplicationUsers)
-                .FirstOrDefaultAsync(x => x.Id == categoryId);
-        }
-
+        
         public async Task<List<Category>> GetCommonCategoriesAsync()
         {
             return await _context.Categories
@@ -54,6 +47,13 @@ namespace SACA.Repositories
                     }).ToList()
                 })
                 .ToListAsync();
+        }
+        
+        public async Task<Category> GetCategoryAsync(int categoryId)
+        {
+            return await _context.Categories
+                .Include(x => x.ApplicationUsers)
+                .FirstOrDefaultAsync(x => x.Id == categoryId);
         }
 
         public async Task<Category> GetUserCategoryAsync(int userId, int categoryId)

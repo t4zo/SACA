@@ -10,40 +10,34 @@ namespace SACA.Controllers
 {
     public class UsersController : BaseApiController
     {
-        private readonly IS3Service _s3Service;
         private readonly MapperlyMapper _mapper;
         private readonly IUserRepository _userRepository;
-        private readonly IUnityOfWork _uow;
         private readonly IUserService _userService;
 
         public UsersController(
             IUserService userService,
-            IS3Service s3Service,
             MapperlyMapper mapper,
-            IUserRepository userRepository,
-            IUnityOfWork unityOfWork
+            IUserRepository userRepository
         )
         {
             _userService = userService;
-            _s3Service = s3Service;
             _mapper = mapper;
             _userRepository = userRepository;
-            _uow = unityOfWork;
         }
         
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpGet]
         public async Task<ActionResult<List<UserResponse>>> GetAll()
         {
-            var usersResponse = await _userRepository.GetUsersAsync();
+            var users = await _userRepository.GetUsersAsync();
 
-            foreach (var userResponse in usersResponse)
+            foreach (var user in users)
             {
-                var user = _mapper.MapToApplicationUser(userResponse);
-                userResponse.Roles = await _userService.GetRolesAsync(user);
+                var applicationUser = _mapper.MapToApplicationUser(user);
+                user.Roles = await _userService.GetRolesAsync(applicationUser);
             }
 
-            return usersResponse;
+            return users;
         }
 
         [AllowAnonymous]

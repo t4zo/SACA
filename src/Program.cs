@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using SACA;
 using SACA.Authorization;
 using SACA.Data;
-using SACA.Database;
 using SACA.Extensions;
 using SACA.Interfaces;
 using SACA.Middlewares;
@@ -14,8 +13,6 @@ using SACA.Repositories;
 using SACA.Repositories.Interfaces;
 using SACA.Services;
 using System.Reflection;
-
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options => options

@@ -38,7 +38,7 @@ namespace SACA.i18n
             return new IdentityError
             {
                 Code = nameof(InvalidUserName),
-                Description = $"Login '{userName}' é inválido, pode conter apenas letras ou dígitos."
+                Description = $"Nome '{userName}' é inválido, pode conter apenas letras ou dígitos."
             };
         }
 
@@ -49,7 +49,7 @@ namespace SACA.i18n
 
         public override IdentityError DuplicateUserName(string userName)
         {
-            return new IdentityError { Code = nameof(DuplicateUserName), Description = $"Login '{userName}' já está sendo utilizado." };
+            return new IdentityError { Code = nameof(DuplicateUserName), Description = $"Nome '{userName}' já está sendo utilizado." };
         }
 
         public override IdentityError DuplicateEmail(string email)

@@ -22,16 +22,15 @@ namespace SACA.Controllers
         public async Task<ActionResult<IEnumerable<Category>>> GetAll()
         {
             var baseQuery = _categoryRepository.GetCategoryQuery();
-
-            if (User.Identity is null || !User.Identity.IsAuthenticated)
+            var userId = User.GetId();
+            
+            if (!userId.HasValue || User.Identity is null || !User.Identity.IsAuthenticated)
             {
                 return await baseQuery
                     .Where(x => x.Id != 1)
                     .ToListAsync();
             }
-
-            var userId = User.GetId();
-
+            
             var categories = await _categoryRepository.GetUserCategoriesAsync(baseQuery, userId.Value);
 
             return categories;
