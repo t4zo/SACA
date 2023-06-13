@@ -1,6 +1,7 @@
 using Bogus;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using SACA.Constants;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
@@ -51,14 +52,48 @@ public class CreateImageControllerTests : IAsyncLifetime
     public async Task<ImageResponse> Should_CreateUserImage_WhenUserExists(int userId)
     {
         // Arrange
-        var content = _faker.Generate();
+        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "gato.jpg");
+        // await using var file1 = File.OpenRead(filePath);
+        // using var content1 = new StreamContent(file1);
+        
+        // Other ways to create stream
+        using var stream = new MemoryStream();
+        
+        // Memory file
+        // var bytes = Convert.FromBase64String(DatabaseConstants.CatCreate);
+        
+        // File path
+        var bytes = Encoding.UTF8.GetBytes(filePath);
+        
+        stream.Write(bytes);
+        using var content1 = new StreamContent(stream);
+
+        // Optional header
+        // content1.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
+        // content1.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
+        
+        using var formData = new MultipartFormDataContent
+        {
+            {content1, "file", "gato.png"},
+            { new StringContent("1"), "categoryId" },
+            // { new StringContent("110"), "resizeWidth" },
+            // { new StringContent("150"), "resizeHeight" },
+            // { new StringContent("false"), "compress" },
+        };
 
         var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
         
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
+        // _client.DefaultRequestHeaders.TryAddWithoutValidation("categoryId", "1");
+
+        // Optional headers
+        // _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("multipart/form-data"));
+        // // fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
+
+
         // var requestMessage = new HttpRequestMessage
         // {
         //     Method = HttpMethod.Post,
@@ -70,7 +105,7 @@ public class CreateImageControllerTests : IAsyncLifetime
         //     },
         // };
 
-        var response = await _client.PostAsJsonAsync("v2/Images", content);
+        var response = await _client.PostAsync("v2/Images", formData);
         var imageResponse = await response.Content.ReadFromJsonAsync<ImageResponse>();
 
         // Assert
@@ -78,33 +113,48 @@ public class CreateImageControllerTests : IAsyncLifetime
 
         return imageResponse;
     }
-    
+
     [Theory]
     [InlineData(1)]
     public async Task Should_CreateAndDeleteImage_WhenUserIsSuperuser(int id)
     {
         // Arrange
-        var content = _faker.Generate();
+        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "gato.jpg");
+        using var stream = new MemoryStream();
+        var bytes = Encoding.UTF8.GetBytes(filePath);
+        stream.Write(bytes);
+        using var content1 = new StreamContent(stream);
+        
+        using var formData = new MultipartFormDataContent
+        {
+            {content1, "file", "gato.png"},
+            { new StringContent("2"), "categoryId" },
+            // { new StringContent("110"), "resizeWidth" },
+            // { new StringContent("150"), "resizeHeight" },
+            // { new StringContent("false"), "compress" },
+        };
 
         var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
 
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(id);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
-
-        var createImage = await _client.PostAsJsonAsync("v2/Images/superuser", content);
-        var createImageResponse = await createImage.Content.ReadFromJsonAsync<ImageResponse>();
         
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
+        // _client.DefaultRequestHeaders.TryAddWithoutValidation("categoryId", "2");
+
+        var createImage = await _client.PostAsync("v2/Images/superuser", formData);
+        var createImageResponse = await createImage.Content.ReadFromJsonAsync<ImageResponse>();
+
         var deleteImage = await _client.DeleteAsync($"v2/Images/superuser/{createImageResponse.Id}");
         var deleteImageResponse = await deleteImage.Content.ReadFromJsonAsync<ImageResponse>();
 
         // Assert
         createImage.StatusCode.Should().Be(HttpStatusCode.OK);
         deleteImage.StatusCode.Should().Be(HttpStatusCode.OK);
-        
+
         createImageResponse.Id.Should().Be(deleteImageResponse.Id);
     }
-    
+
     [Theory]
     [InlineData(2)]
     public async Task Should_ReturnForbidden_WhenUserIsNotSuperuser(int id)
@@ -123,8 +173,8 @@ public class CreateImageControllerTests : IAsyncLifetime
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-    
+
     public Task InitializeAsync() => Task.CompletedTask;
-    
+
     public async Task DisposeAsync() => await _integrationTestFactory.ResetDatabaseAsync();
 }

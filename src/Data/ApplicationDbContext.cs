@@ -21,7 +21,7 @@ namespace SACA.Data
 
             foreach (var entity in entities)
             {
-                entity.FindProperty("Id")?.SetIdentityStartValue(1000);
+                // entity.FindProperty("Id")?.SetIdentityStartValue(1000);
             }
 
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
