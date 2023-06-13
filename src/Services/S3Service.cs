@@ -2,11 +2,11 @@
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
-using Amazon.S3.Transfer;
 using Microsoft.Extensions.Options;
 using SACA.Extensions;
 using SACA.Interfaces;
 using SACA.Options;
+using System.Net.Mime;
 
 namespace SACA.Services
 {
@@ -14,7 +14,7 @@ namespace SACA.Services
     {
         private readonly ILogger _logger;
         private readonly RegionEndpoint _bucketRegion;
-        private readonly IAmazonS3 _s3Client;
+        private readonly IAmazonS3 _s3;
         private readonly AWSOptions _awsOptions;
         private readonly bool _isProduction;
 
@@ -25,58 +25,36 @@ namespace SACA.Services
             if (awsOptions.Value.S3.BucketRegion == "us-east-1")
             {
                 _bucketRegion = RegionEndpoint.USEast1;
-            };
+            }
 
             _awsOptions = awsOptions.Value;
-            _s3Client = new AmazonS3Client(new BasicAWSCredentials(_awsOptions.AwsAccessKeyId, _awsOptions.AwsSecretAccessKey), _bucketRegion);
+            _s3 = new AmazonS3Client(new BasicAWSCredentials(_awsOptions.AwsAccessKeyId, _awsOptions.AwsSecretAccessKey), _bucketRegion);
             _isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production";
         }
 
-        public async Task<string> UploadSharedFileAsync(string base64Url)
+        public async Task<string> UploadCommonFileAsync(IFormFile file)
         {
             try
             {
-                var normalizedKey = $"{(_isProduction ? string.Empty : "dev/")}shared/{Guid.NewGuid()}";
+                var (name, extension, _) = file.FileName.Split(".");
+                var key = NormalizedSharedKey(extension);
 
-                var stream = GetBase64Stream(base64Url);
-
-                // Multipart Upload
-                var fileTransferUtility = new TransferUtility(_s3Client);
-                await fileTransferUtility.UploadAsync(stream, _awsOptions.S3.BucketName, normalizedKey);
-
-                return $"https://{_awsOptions.S3.BucketName}.s3.amazonaws.com/{normalizedKey}";
-
-            }
-            catch (AmazonS3Exception e)
-            {
-                _logger.LogError("Error encountered on server. Message:'{0}' when deleting an object", e.Message);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError("Unknown encountered on server. Message:'{0}' when deleting an object", e.Message);
-            }
-
-            return string.Empty;
-        }
-
-        public async Task<string> UploadSharedFileAsync(string base64Url, string keyName)
-        {
-            try
-            {
-                var normalizedKey = $"{(_isProduction ? string.Empty : "dev/")}shared/{keyName.Replace(" ", "-").ToLower().RemoveAccent()}";
-
-                var stream = GetBase64Stream(base64Url);
-
-                var response = await _s3Client.PutObjectAsync(new PutObjectRequest
+                var putObjectRequest = new PutObjectRequest
                 {
-                    InputStream = stream,
-                    Key = normalizedKey,
                     BucketName = _awsOptions.S3.BucketName,
-                    ContentType = "image/jpeg",
-                });
+                    Key = key,
+                    ContentType = file.ContentType,
+                    InputStream = file.OpenReadStream(),
+                    Metadata =
+                    {
+                        ["x-amz-meta-originalname"] = name,
+                        ["x-amz-meta-extension"] = extension,
+                    }
+                };
 
-                return $"https://{_awsOptions.S3.BucketName}.s3.amazonaws.com/{normalizedKey}";
+                _ = await _s3.PutObjectAsync(putObjectRequest);
 
+                return MountUrl(key);
             }
             catch (AmazonS3Exception e)
             {
@@ -90,19 +68,29 @@ namespace SACA.Services
             return string.Empty;
         }
 
-        public async Task<string> UploadUserFileAsync(string base64Url, string keyName)
+        public async Task<string> UploadUserFileAsync(IFormFile file, string keyName)
         {
             try
             {
-                var normalizedKey = $"{(_isProduction ? string.Empty : "dev/")}users/{keyName}/{Guid.NewGuid()}";
+                var (name, extension, _) = file.FileName.Split(".");
+                var key = NormalizeKey(keyName, extension);
 
-                using var stream = GetBase64Stream(base64Url);
+                var putObjectRequest = new PutObjectRequest
+                {
+                    BucketName = _awsOptions.S3.BucketName,
+                    Key = key,
+                    ContentType = file.ContentType,
+                    InputStream = file.OpenReadStream(),
+                    Metadata =
+                    {
+                        ["x-amz-meta-originalname"] = name,
+                        ["x-amz-meta-extension"] = extension,
+                    }
+                };
 
-                var fileTransferUtility = new TransferUtility(_s3Client);
-                await fileTransferUtility.UploadAsync(stream, _awsOptions.S3.BucketName, normalizedKey);
+                _ = await _s3.PutObjectAsync(putObjectRequest);
 
-                return $"https://{_awsOptions.S3.BucketName}.s3.amazonaws.com/{normalizedKey}";
-
+                return MountUrl(key);
             }
             catch (AmazonS3Exception e)
             {
@@ -114,27 +102,20 @@ namespace SACA.Services
             }
 
             return string.Empty;
-
-            //using var s3Client = new AmazonS3Client(_awsOptions.S3.AwsAccessKeyId, _awsOptions.S3.AwsSecretAccessKey, _bucketRegion);
-
-            //var uploadRequest = new TransferUtilityUploadRequest
-            //{
-            //    InputStream = stream,
-            //    Key = $"{keyName}/{Guid.NewGuid()}",
-            //    BucketName = _awsOptions.S3.BucketName,
-            //    CannedACL = S3CannedACL.PublicRead
-            //};
-
-            //var fileTransferUtility = new TransferUtility(s3Client);
-            //await fileTransferUtility.UploadAsync(uploadRequest);
         }
 
         public async Task RemoveFileAsync(string keyName)
         {
             try
             {
-                var normalizedKey = keyName.Split(".s3.amazonaws.com/")[1];
-                await _s3Client.DeleteObjectAsync(_awsOptions.S3.BucketName, normalizedKey);
+                var key = keyName.Split(".s3.amazonaws.com/").LastOrDefault();
+                var deleteObjectRequest = new DeleteObjectRequest
+                {
+                    BucketName = _awsOptions.S3.BucketName,
+                    Key = key,
+                };
+
+                _ = await _s3.DeleteObjectAsync(deleteObjectRequest);
             }
             catch (AmazonS3Exception e)
             {
@@ -150,18 +131,19 @@ namespace SACA.Services
         {
             try
             {
-                var normalizedKey = $"users/{keyName}/";
-                var folderFiles = await _s3Client.ListObjectsV2Async(new ListObjectsV2Request
+                var key = $"users/{keyName}/";
+                var listObjectsV2Request = new ListObjectsV2Request
                 {
                     BucketName = _awsOptions.S3.BucketName,
-                    Prefix = normalizedKey,
-                });
+                    Prefix = key,
+                };
+
+                var folderFiles = await _s3.ListObjectsV2Async(listObjectsV2Request);
 
                 foreach (var file in folderFiles.S3Objects)
                 {
-                    await _s3Client.DeleteObjectAsync(file.BucketName, file.Key);
+                    await _s3.DeleteObjectAsync(file.BucketName, file.Key);
                 }
-
             }
             catch (AmazonS3Exception e)
             {
@@ -173,12 +155,61 @@ namespace SACA.Services
             }
         }
 
-        private static MemoryStream GetBase64Stream(string base64Url)
+        private string NormalizeKey(string keyName, string extension)
         {
-            var stream = new MemoryStream();
-            var bytes = Convert.FromBase64String(base64Url);
-            stream.Write(bytes);
-            return stream;
+            var normalizedKey = $"{(_isProduction ? string.Empty : "dev/")}users/{keyName}/{Guid.NewGuid()}.{extension}";
+            return normalizedKey;
+        }
+
+        private string NormalizedSharedKey(string extension)
+        {
+            var normalizedSharedKey = $"{(_isProduction ? string.Empty : "dev/")}shared/{Guid.NewGuid()}.{extension}";
+            return normalizedSharedKey;
+        }
+
+        private string MountUrl(string key)
+        {
+            return $"https://{_awsOptions.S3.BucketName}.s3.amazonaws.com/{key}";
+        }
+
+
+        public async Task<string> UploadCommonSeedFileAsync(string base64Url, string keyName, string extension)
+        {
+            try
+            {
+                var key = $"{(_isProduction ? string.Empty : "dev/")}shared/{keyName.Replace(" ", "-").ToLower().RemoveAccent()}.{extension}";
+                
+                using var stream = new MemoryStream();
+                var bytes = Convert.FromBase64String(base64Url);
+                stream.Write(bytes);
+                
+                var putObjectRequest = new PutObjectRequest
+                {
+                    BucketName = _awsOptions.S3.BucketName,
+                    Key = key,
+                    ContentType = MediaTypeNames.Image.Jpeg,
+                    InputStream = stream,
+                    Metadata =
+                    {
+                        ["x-amz-meta-originalname"] = keyName.RemoveAccent(),
+                        ["x-amz-meta-extension"] = MediaTypeNames.Image.Jpeg.Split("/").LastOrDefault(),
+                    }
+                };
+
+                _ = await _s3.PutObjectAsync(putObjectRequest);
+
+                return MountUrl(key);
+            }
+            catch (AmazonS3Exception e)
+            {
+                _logger.LogError("Error encountered on server. Message:'{0}' when deleting an object", e.Message);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Unknown encountered on server. Message:'{0}' when deleting an object", e.Message);
+            }
+
+            return string.Empty;
         }
     }
 }

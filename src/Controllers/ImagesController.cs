@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SACA.Constants;
+using SACA.Entities;
 using SACA.Entities.Requests;
 using SACA.Entities.Responses;
 using SACA.Extensions;
@@ -69,27 +70,48 @@ namespace SACA.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ImageResponse>> Create(ImageRequest imageRequest)
+        public async Task<ActionResult<ImageResponse>> Create(
+            [FromForm] IFormFile file,
+            [FromForm] int categoryId,
+            [FromForm] int resizeWidth,
+            [FromForm] int resizeHeight,
+            [FromForm] bool compress
+        )
         {
             var userId = User.GetId();
             if (!userId.HasValue)
             {
                 return NoContent();
             }
-            
-            var image = _mapper.MapToImage(imageRequest);
+
             var applicationUser = await _userRepository.GetUserCategoryAsync(userId.Value);
-            image.UserId = userId.Value;
+
+            if (resizeWidth > 0 && resizeHeight > 0)
+            {
+                await _imageService.Resize(file, resizeWidth, resizeHeight);
+            }
+
+            if (compress)
+            {
+                // await _imageService.Compress(file);
+            }
             
-            var resizedImage = _imageService.Resize(new MagickImage(Convert.FromBase64String(imageRequest.Base64))).ToBase64();
-            image.Url = await _s3Service.UploadUserFileAsync(resizedImage, applicationUser.Id.ToString());
+            var name = file.FileName.Contains('.') ? file.FileName[..file.FileName[..^1].LastIndexOf(".", StringComparison.Ordinal)] : file.FileName;
+            
+            var image = new Image
+            {
+                UserId = userId.Value,
+                CategoryId = categoryId,
+                Name = name,
+                Url = await _s3Service.UploadUserFileAsync(file, applicationUser.Id.ToString())
+            };
 
             var category = await _categoryRepository.GetCategoryAsync(image.CategoryId);
             if (applicationUser.Categories.All(x => x.Id != category.Id))
             {
                 category.ApplicationUsers.Add(applicationUser);
             }
-            
+
             await _imageRepository.AddAsync(image);
             await _uow.SaveChangesAsync();
 
@@ -97,19 +119,20 @@ namespace SACA.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ImageResponse>> Update(int id, ImageRequest imageRequest)
+        public async Task<ActionResult<ImageResponse>> Update(
+            int id,
+            [FromForm] IFormFile file,
+            [FromForm] int resizeWidth,
+            [FromForm] int resizeHeight,
+            [FromForm] bool compress
+        )
         {
-            if (id != imageRequest.Id)
-            {
-                return NotFound("Image was not found");
-            }
-
             var userId = User.GetId();
             if (!userId.HasValue)
             {
                 return NoContent();
             }
-            
+
             var originalImage = await _imageRepository.GetAsync(id);
             if (originalImage is null)
             {
@@ -118,12 +141,21 @@ namespace SACA.Controllers
 
             var applicationUser = await _userRepository.GetUserAsync(userId.Value);
             var image = _mapper.MapToImage(originalImage);
-            var resizedImage = _imageService.Resize(new MagickImage(Convert.FromBase64String(imageRequest.Base64))).ToBase64();
+
+            if (resizeWidth > 0 && resizeHeight > 0)
+            {
+                await _imageService.Resize(file, resizeWidth, resizeHeight);
+            }
+
+            if (compress)
+            {
+                // await _imageService.Compress(file);
+            }
+
+            image.Name = file.FileName.Contains('.') ? file.FileName[..file.FileName[..^1].LastIndexOf(".", StringComparison.Ordinal)] : file.FileName;
 
             await _s3Service.RemoveFileAsync(originalImage.Url);
-
-            image.Name = imageRequest.Name;
-            image.Url = await _s3Service.UploadUserFileAsync(resizedImage, applicationUser.Id.ToString());
+            image.Url = await _s3Service.UploadUserFileAsync(file, applicationUser.Id.ToString());
 
             await _uow.SaveChangesAsync();
 
@@ -133,7 +165,13 @@ namespace SACA.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ImageResponse>> Remove(int id)
         {
-            var image = await _imageRepository.GetAsync(id);
+            var userId = User.GetId();
+            if (!userId.HasValue)
+            {
+                return NoContent();
+            }
+
+            var image = await _imageRepository.GetAsync(userId.Value, id);
             if (image is null)
             {
                 return NotFound();
@@ -149,12 +187,27 @@ namespace SACA.Controllers
 
         [Authorize(Roles = AuthorizationConstants.Roles.Superuser)]
         [HttpPost("superuser")]
-        public async Task<ActionResult<ImageResponse>> SuperuserCreateImage(ImageRequest imageRequest)
+        public async Task<ActionResult<ImageResponse>> SuperuserCreateImage(
+            [FromForm] IFormFile file,
+            [FromForm] int categoryId,
+            [FromForm] int resizeWidth,
+            [FromForm] int resizeHeight,
+            [FromForm] bool compress
+        )
         {
-            var image = _mapper.MapToImage(imageRequest);
+            if (resizeWidth > 0 && resizeHeight > 0)
+            {
+                await _imageService.Resize(file, resizeWidth, resizeHeight);
+            }
 
-            var resizedImage = _imageService.Resize(new MagickImage(Convert.FromBase64String(imageRequest.Base64))).ToBase64();
-            image.Url = await _s3Service.UploadSharedFileAsync(resizedImage);
+            var name = file.FileName.Contains('.') ? file.FileName[..file.FileName[..^1].LastIndexOf(".", StringComparison.Ordinal)] : file.FileName;
+
+            var image = new Image
+            {
+                CategoryId = categoryId,
+                Name = name,
+                Url = await _s3Service.UploadCommonFileAsync(file)
+            };
 
             await _imageRepository.AddAsync(image);
             await _uow.SaveChangesAsync();

@@ -39,7 +39,7 @@ namespace SACA.Data.Seed.Models
 
                     if (loadAsyncOptions is not null && loadAsyncOptions.UploadImage)
                     {
-                        image.Url = await _s3Service.UploadSharedFileAsync(imageDto.Base64, imageDto.Name);
+                        image.Url = await _s3Service.UploadCommonSeedFileAsync(imageDto.Base64, imageDto.Name, "png");
                     }
                     else
                     {

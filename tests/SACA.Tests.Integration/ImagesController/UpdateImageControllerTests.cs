@@ -33,21 +33,29 @@ public class UpdateImageControllerTests : IAsyncLifetime
         var signInUserAuthControllerTests = new SignInAuthControllerTests(_integrationTestFactory);
         var getImagesControllerTests = new GetImagesControllerTests(_integrationTestFactory);
         
+        
         // Act
         var user = await signInUserAuthControllerTests.Should_SignInUser_WhenUserExist(userId);
         var image = await getImagesControllerTests.Should_ReturnImage_WhenIsUserImage(userId, imageId);
 
-        var content = new ImageRequest
+        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "gato.jpg");
+        using var stream = new MemoryStream();
+        var bytes = Encoding.UTF8.GetBytes(filePath);
+        stream.Write(bytes);
+        using var content1 = new StreamContent(stream);
+        
+        using var formData = new MultipartFormDataContent
         {
-            Id = image.Id,
-            CategoryId = image.CategoryId,
-            Name = image.Name,
-            Base64 = DatabaseConstants.CatUpdate,
+            {content1, "file", image.Name},
         };
         
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, user.Token);
+        _client.DefaultRequestHeaders.TryAddWithoutValidation("categoryId", "1");
+        // _client.DefaultRequestHeaders.TryAddWithoutValidation("resizeWidth", "110");
+        // _client.DefaultRequestHeaders.TryAddWithoutValidation("resizeHeight", "150");
+        // _client.DefaultRequestHeaders.TryAddWithoutValidation("compress", "false");
         
-        var response = await _client.PutAsJsonAsync($"v2/Images/{imageId}", content);
+        var response = await _client.PutAsync($"v2/Images/{imageId}", formData);
         var updatedImageResponse = await response.Content.ReadFromJsonAsync<ImageResponse>();
 
         // Assert

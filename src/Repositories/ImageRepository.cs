@@ -19,7 +19,18 @@ namespace SACA.Repositories
 
         public async Task<Image> GetAsync(int imageId)
         {
-            return await _context.Images.FindAsync(imageId);
+            return await _context.Images.FirstOrDefaultAsync(i => i.Id == imageId);
+        }
+        
+        public async Task<Image> GetAsync(int userId, int imageId)
+        {
+            var image = await _context.Images
+                .Include(x => x.User)
+                .AsNoTracking()
+                .Where(x => x.UserId == userId && x.Id == imageId)
+                .FirstOrDefaultAsync();
+
+            return image;
         }
 
         public async Task AddAsync(Image image)
@@ -48,7 +59,7 @@ namespace SACA.Repositories
             var image = await _context.Images
                 .Include(x => x.User)
                 .AsNoTracking()
-                .Where(x => x.Id == imageId && x.UserId == userId)
+                .Where(x => x.UserId == userId && x.Id == imageId)
                 .FirstOrDefaultAsync();
 
             return _mapper.MapToImageResponse(image);

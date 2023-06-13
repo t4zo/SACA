@@ -43,6 +43,7 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
             .Build();
 
         _connectionString = $"Host={_dbContainer.Hostname};Port={port};Database=saca;User ID=postgres;Password=docker";
+        // _connectionString = $"Host=localhost;Port=5432;Database=saca;User ID=postgres;Password=docker";
     }
     
     protected override void ConfigureWebHost(IWebHostBuilder builder)

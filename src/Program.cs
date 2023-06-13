@@ -1,6 +1,8 @@
 using FluentValidation.AspNetCore;
+using HealthChecks.UI.Client;
 using Hellang.Middleware.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using SACA;
 using SACA.Authorization;
@@ -15,8 +17,10 @@ using SACA.Services;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options => options
-    .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    .UseNpgsql(connectionString)
     .UseSnakeCaseNamingConvention());
 
 builder.Services.AddScoped<MapperlyMapper>();
@@ -49,7 +53,7 @@ builder.Services.AddJwtSecurity();
 
 builder.Services.AddProblemDetails(configure => { configure.IncludeExceptionDetails = (_, _) => true; });
 
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks().AddNpgSql(connectionString);
 
 builder.Services.AddSwagger();
 
@@ -90,10 +94,14 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers().RequireAuthorization();
-    endpoints.MapHealthChecks("/health");
 });
 
 app.Run();

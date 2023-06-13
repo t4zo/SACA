@@ -31,4 +31,11 @@
       <ProjectReference Include="..\..\src\SACA.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Assets\gato.jpg" />
+      <Content Include="Assets\gato.jpg">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>
