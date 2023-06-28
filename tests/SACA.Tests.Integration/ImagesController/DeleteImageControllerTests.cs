@@ -5,9 +5,12 @@ using SACA.Entities.Requests;
 using SACA.Entities.Responses;
 using SACA.Tests.Integration.AuthController;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace SACA.Tests.Integration.ImagesController;
 

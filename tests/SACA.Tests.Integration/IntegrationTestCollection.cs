@@ -1,3 +1,5 @@
+using Xunit;
+
 namespace SACA.Tests.Integration;
 
 public static class IntegrationTestCollectionConstants

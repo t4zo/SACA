@@ -3,7 +3,10 @@ using SACA.Entities.Requests;
 using SACA.Entities.Responses;
 using SACA.Tests.Integration.UsersController;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace SACA.Tests.Integration.AuthController;
 

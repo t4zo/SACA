@@ -3,9 +3,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SACA.Entities;
 using SACA.Tests.Integration.AuthController;
 using SACA.Tests.Integration.UsersController;
+using System;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace SACA.Tests.Integration.CategoriesController;
 
