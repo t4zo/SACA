@@ -38,7 +38,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: "{{ defaultContext }}:src"
+          context: "{{ defaultContext }}"
           push: true
           tags: ${{ env.GITHUB_USER_IMAGE_TAG }}
 
