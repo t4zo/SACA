@@ -1,3 +1,4 @@
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using HealthChecks.UI.Client;
 using Hellang.Middleware.ProblemDetails;
@@ -63,12 +64,12 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddControllers()
-    .AddFluentValidation(configureExpression =>
-    {
-        configureExpression.LocalizationEnabled = true;
-        configureExpression.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-    });
+ValidatorOptions.Global.LanguageManager.Enabled = true;
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
