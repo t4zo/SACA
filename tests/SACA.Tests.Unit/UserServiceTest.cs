@@ -1,7 +1,7 @@
 using Xunit;
 using SACA;
 
-namespace SACA.UnitTests
+namespace SACA.Tests.Unit
 {
     public class UserServiceTest
     {
